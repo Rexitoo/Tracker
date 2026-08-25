@@ -119,7 +119,7 @@
                 <div class="bg-[#121824] border border-slate-800/80 px-6 py-4 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
                         <h2 class="font-bold text-lg text-white">Roster completo del torneo</h2>
-                        <p class="text-xs text-slate-400">Haz clic en cualquier participante para ver sus fichas y pincha en sus Pokémon para abrir su tarjeta detallada (con estadísticas personalizadas del Desafío Lunar).</p>
+                        <p class="text-xs text-slate-400">Haz clic en cualquier participante para ver sus fichas y pincha en sus Pokémon para abrir su tarjeta detallada (con estadísticas y tipos personalizados del Desafío Lunar).</p>
                     </div>
                     <div class="w-full sm:w-auto">
                         <input type="text" id="pokemon-search-input" oninput="renderParticipantsGrid()" placeholder="🔍 Buscar Pokémon o Entrenador..." class="w-full sm:w-64 bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-slate-700">
@@ -150,7 +150,7 @@
                     <h2 class="text-xl font-bold text-white border-b border-slate-800 pb-3">📜 Reglamento Randomlocke</h2>
                     <ul class="space-y-3 text-slate-300 text-sm list-disc pl-5">
                         <li><strong class="text-white">Muerte permanente:</strong> Pokémon muerto pasa al Cementerio.</li>
-                        <li><strong class="text-white">Balance de estadísticas:</strong> Las fichas de Pokémon reflejan las estadísticas modificadas oficialmente para el torneo Desafío Lunar.</li>
+                        <li><strong class="text-white">Balance de estadísticas y tipos:</strong> Las fichas reflejan los cambios oficiales del torneo Desafío Lunar.</li>
                     </ul>
                 </div>
             </section>
@@ -466,6 +466,16 @@
             "togedemaru": { hp: 85, atk: 98, def: 78, spa: 30, spd: 78, spe: 106 },
             "mimikyu": { hp: 75, atk: 90, def: 80, spa: 50, spd: 105, spe: 100 },
             "drampa": { hp: 100, atk: 60, def: 85, spa: 135, spd: 85, spe: 35 }
+        };
+
+        // TIPOS MODIFICADOS (DESAFÍO LUNAR)
+        const customLunarTypes = {
+            "corsola": ["water"],
+            "delibird": ["ice"],
+            "altaria": ["dragon", "fairy"],
+            "chimecho": ["psychic", "flying"],
+            "barbaracle": ["rock", "fighting"],
+            "aurorus": ["rock"]
         };
 
         const officialTrainers = [
@@ -819,17 +829,14 @@
                 .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
                 .replace(/[^a-z0-9]/g, "");
 
-            // 1. COMPROBAR SI ESTÁ EN LAS ESTADÍSTICAS MODIFICADAS DEL EXCEL (DESAFÍO LUNAR)
             const customStats = customLunarStats[queryName];
 
             if (customStats) {
-                // Si está personalizado en vuestro Excel, usamos vuestros valores directamente
                 document.getElementById('detail-modal-source').textContent = "Personalizado (Lunar)";
                 document.getElementById('detail-modal-source').className = "text-[10px] bg-red-600/20 text-red-400 border border-red-600/40 px-2 py-0.5 rounded font-bold";
                 
                 renderStatsAndTypes(customStats, queryName, p.species);
             } else {
-                // Si no está en el Excel, tiramos de la PokéAPI
                 document.getElementById('detail-modal-source').textContent = "PokéAPI (Original)";
                 document.getElementById('detail-modal-source').className = "text-[10px] bg-blue-600/20 text-blue-400 border border-blue-600/40 px-2 py-0.5 rounded font-bold";
 
@@ -864,7 +871,6 @@
         }
 
         async function renderStatsAndTypes(statsObj, queryName, speciesName, preloadedTypeUrls = null) {
-            // Renderizar barras de stats base
             const statMapping = [
                 { key: 'hp', name: 'PS' },
                 { key: 'atk', name: 'Ataque' },
@@ -890,24 +896,36 @@
             });
             document.getElementById('detail-modal-stats').innerHTML = statsHtml;
 
-            // Obtener tipos y debilidades
+            const typeColors = {
+                normal: 'bg-zinc-500 text-white', fire: 'bg-orange-600 text-white', water: 'bg-blue-600 text-white',
+                electric: 'bg-amber-500 text-black font-bold', grass: 'bg-emerald-600 text-white', ice: 'bg-cyan-400 text-black font-bold',
+                fighting: 'bg-red-700 text-white', poison: 'bg-purple-600 text-white', ground: 'bg-amber-700 text-white',
+                flying: 'bg-indigo-400 text-white', psychic: 'bg-pink-600 text-white', bug: 'bg-lime-600 text-white',
+                rock: 'bg-stone-600 text-white', ghost: 'bg-purple-900 text-white', dragon: 'bg-violet-700 text-white',
+                dark: 'bg-neutral-800 text-white', steel: 'bg-slate-500 text-white', fairy: 'bg-rose-400 text-black font-bold'
+            };
+
             let typeUrls = preloadedTypeUrls;
-            if (!typeUrls) {
+
+            // VERIFICAR SI TIENE TIPOS PERSONALIZADOS EN EL DESAFÍO LUNAR
+            if (customLunarTypes[queryName]) {
+                const customTypesList = customLunarTypes[queryName];
+                let typesHtml = '';
+                typeUrls = []; 
+
+                customTypesList.forEach(tName => {
+                    const colorClass = typeColors[tName] || 'bg-slate-700 text-white';
+                    typesHtml += `<span class="text-[10px] uppercase font-extrabold px-3 py-1 rounded-full ${colorClass}">${tName}</span>`;
+                    typeUrls.push(`https://pokeapi.co/api/v2/type/${tName}`);
+                });
+                document.getElementById('detail-modal-types').innerHTML = typesHtml;
+            } else if (!typeUrls) {
                 try {
                     const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${queryName}`);
                     if (res.ok) {
                         const data = await res.json();
                         document.getElementById('detail-modal-id').textContent = `#${String(data.id).padStart(4, '0')}`;
                         typeUrls = data.types.map(t => t.type.url);
-                        
-                        const typeColors = {
-                            normal: 'bg-zinc-500 text-white', fire: 'bg-orange-600 text-white', water: 'bg-blue-600 text-white',
-                            electric: 'bg-amber-500 text-black font-bold', grass: 'bg-emerald-600 text-white', ice: 'bg-cyan-400 text-black font-bold',
-                            fighting: 'bg-red-700 text-white', poison: 'bg-purple-600 text-white', ground: 'bg-amber-700 text-white',
-                            flying: 'bg-indigo-400 text-white', psychic: 'bg-pink-600 text-white', bug: 'bg-lime-600 text-white',
-                            rock: 'bg-stone-600 text-white', ghost: 'bg-purple-900 text-white', dragon: 'bg-violet-700 text-white',
-                            dark: 'bg-neutral-800 text-white', steel: 'bg-slate-500 text-white', fairy: 'bg-rose-400 text-black font-bold'
-                        };
 
                         let typesHtml = '';
                         data.types.forEach(t => {
