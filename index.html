@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuzlocke Tournament Hub - Randomlocke</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #0b0f17; color: #f8fafc; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0b0f17; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #334155; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-red-600 selection:text-white">
+
+    <!-- Topbar Superior -->
+    <header class="h-16 bg-[#0e131f] border-b border-slate-800/80 fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6">
+        <div class="flex items-center gap-3">
+            <div class="bg-red-600/20 border border-red-600/40 p-2 rounded-xl text-red-500 font-black text-lg">🔥</div>
+            <div>
+                <h1 class="font-extrabold tracking-wider text-white text-sm">NUZLOCKE</h1>
+                <p class="text-[10px] text-slate-400 font-semibold tracking-widest uppercase">RANDOM HUB</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <button onclick="exportData()" title="Descargar copia de seguridad" class="hidden sm:flex items-center gap-1.5 text-xs text-slate-300 bg-slate-900 hover:bg-slate-800 border border-slate-800 px-3 py-1.5 rounded-lg transition font-medium">
+                <span>💾</span> <span>Backup Datos</span>
+            </button>
+            <div id="auth-header-container" class="flex items-center gap-3"></div>
+        </div>
+    </header>
+
+    <!-- Layout Principal -->
+    <div class="flex pt-16 flex-1">
+        
+        <!-- Sidebar Fija Izquierda -->
+        <aside class="w-64 bg-[#0e131f] border-r border-slate-800/80 fixed left-0 top-16 bottom-0 z-30 flex flex-col justify-between p-4 hidden md:flex">
+            <nav class="space-y-1.5">
+                <button onclick="switchView('home')" id="nav-home" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition bg-red-600/10 text-red-500 border border-red-600/30">
+                    <span>🏠</span> Inicio
+                </button>
+                <button onclick="switchView('participants')" id="nav-participants" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-900/80 hover:text-white">
+                    <span>👥</span> Participantes
+                </button>
+                <button onclick="switchView('bracket')" id="nav-bracket" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-900/80 hover:text-white">
+                    <span>⚔️</span> Bracket
+                </button>
+                <button onclick="switchView('playoffs')" id="nav-playoffs" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-900/80 hover:text-white">
+                    <span>🏆</span> Playoffs
+                </button>
+                <button onclick="switchView('rules')" id="nav-rules" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-900/80 hover:text-white">
+                    <span>📜</span> Normas
+                </button>
+                <button onclick="switchView('stats')" id="nav-stats" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-900/80 hover:text-white">
+                    <span>📊</span> Estadísticas
+                </button>
+                <button onclick="checkAndOpenProfile()" id="nav-profile" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-900/80 hover:text-white">
+                    <span>🛡️</span> Mi Ficha Nuzlocke
+                </button>
+            </nav>
+
+            <div class="text-[11px] text-slate-500 px-3 py-2 border-t border-slate-800/60 flex justify-between items-center">
+                <span>Guardado OK</span>
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            </div>
+        </aside>
+
+        <!-- Contenido Dinámico -->
+        <main class="flex-1 md:ml-64 p-8 max-w-7xl mx-auto space-y-6">
+
+            <!-- VISTA: INICIO -->
+            <section id="view-home" class="space-y-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-[#121824] border border-slate-800/80 p-5 rounded-2xl shadow-lg flex items-center justify-between">
+                        <div>
+                            <div id="stat-total-participants" class="text-2xl font-black text-white">0</div>
+                            <div class="text-xs text-slate-400 font-medium mt-0.5">Participantes oficiales</div>
+                        </div>
+                        <div class="text-red-500 bg-red-500/10 p-3 rounded-xl">👥</div>
+                    </div>
+                    <div class="bg-[#121824] border border-slate-800/80 p-5 rounded-2xl shadow-lg flex items-center justify-between">
+                        <div>
+                            <div class="text-2xl font-black text-white">Ronda 1</div>
+                            <div class="text-xs text-slate-400 font-medium mt-0.5">Fase actual</div>
+                        </div>
+                        <div class="text-amber-500 bg-amber-500/10 p-3 rounded-xl">⚔️</div>
+                    </div>
+                    <div class="bg-[#121824] border border-slate-800/80 p-5 rounded-2xl shadow-lg flex items-center justify-between">
+                        <div>
+                            <div class="text-2xl font-black text-white" id="stat-battles">0</div>
+                            <div class="text-xs text-slate-400 font-medium mt-0.5">Combates jugados</div>
+                        </div>
+                        <div class="text-orange-500 bg-orange-500/10 p-3 rounded-xl">🔥</div>
+                    </div>
+                    <div class="bg-[#121824] border border-slate-800/80 p-5 rounded-2xl shadow-lg flex items-center justify-between">
+                        <div>
+                            <div class="text-2xl font-black text-white" id="stat-total-deaths">0</div>
+                            <div class="text-xs text-slate-400 font-medium mt-0.5">Bajas (Tramo actual)</div>
+                        </div>
+                        <div class="text-purple-500 bg-purple-500/10 p-3 rounded-xl">💀</div>
+                    </div>
+                </div>
+
+                <div class="bg-[#121824] border border-slate-800/80 rounded-2xl p-6 shadow-xl space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h2 class="font-bold text-lg text-white flex items-center gap-2">🏆 Clasificación General</h2>
+                        <span class="text-xs text-slate-400">Menos muertes en este tramo</span>
+                    </div>
+                    <div id="home-ranking-list" class="space-y-2"></div>
+                </div>
+            </section>
+
+            <!-- VISTA: PARTICIPANTES -->
+            <section id="view-participants" class="hidden space-y-6">
+                <div class="bg-[#121824] border border-slate-800/80 px-6 py-4 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h2 class="font-bold text-lg text-white">Roster completo del torneo</h2>
+                        <p class="text-xs text-slate-400">Haz clic en cualquier participante para ver sus fichas y pincha en sus Pokémon para abrir su tarjeta detallada (con estadísticas personalizadas del Desafío Lunar).</p>
+                    </div>
+                    <div class="w-full sm:w-auto">
+                        <input type="text" id="pokemon-search-input" oninput="renderParticipantsGrid()" placeholder="🔍 Buscar Pokémon o Entrenador..." class="w-full sm:w-64 bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-slate-700">
+                    </div>
+                </div>
+                <div id="participants-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+            </section>
+
+            <!-- VISTA: BRACKET -->
+            <section id="view-bracket" class="hidden space-y-6">
+                <div class="bg-[#121824] border border-slate-800/80 p-6 rounded-2xl text-center space-y-3">
+                    <h2 class="text-xl font-bold text-white">⚔️ Emparejamientos de Combate</h2>
+                    <p class="text-slate-400 text-sm">Enfrentamientos eliminatorios.</p>
+                </div>
+            </section>
+
+            <!-- VISTA: PLAYOFFS -->
+            <section id="view-playoffs" class="hidden space-y-6">
+                <div class="bg-[#121824] border border-slate-800/80 p-6 rounded-2xl text-center space-y-3">
+                    <h2 class="text-xl font-bold text-white">🏆 Cuadro de Playoffs</h2>
+                    <p class="text-slate-400 text-sm">Fase final por el título.</p>
+                </div>
+            </section>
+
+            <!-- VISTA: NORMAS -->
+            <section id="view-rules" class="hidden space-y-6">
+                <div class="bg-[#121824] border border-slate-800/80 p-8 rounded-2xl space-y-4">
+                    <h2 class="text-xl font-bold text-white border-b border-slate-800 pb-3">📜 Reglamento Randomlocke</h2>
+                    <ul class="space-y-3 text-slate-300 text-sm list-disc pl-5">
+                        <li><strong class="text-white">Muerte permanente:</strong> Pokémon muerto pasa al Cementerio.</li>
+                        <li><strong class="text-white">Balance de estadísticas:</strong> Las fichas de Pokémon reflejan las estadísticas modificadas oficialmente para el torneo Desafío Lunar.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- VISTA: ESTADÍSTICAS -->
+            <section id="view-stats" class="hidden space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-[#121824] border border-slate-800/80 p-5 rounded-2xl">
+                        <div class="text-xs text-slate-400">Entrenador con menos muertes</div>
+                        <div id="stat-fewest-deaths" class="text-emerald-400 font-bold text-lg mt-1">-</div>
+                    </div>
+                    <div class="bg-[#121824] border border-slate-800/80 p-5 rounded-2xl">
+                        <div class="text-xs text-slate-400">Entrenador con más muertes</div>
+                        <div id="stat-most-deaths" class="text-red-400 font-bold text-lg mt-1">-</div>
+                    </div>
+                </div>
+                <div class="bg-[#121824] border border-slate-800/80 p-6 rounded-2xl space-y-4 shadow-xl">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <h3 class="font-bold text-base text-white">📊 Pokémon más usados en el torneo</h3>
+                    </div>
+                    <div id="stat-most-used-pokemons" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+                </div>
+            </section>
+
+            <!-- VISTA: FICHA / PANEL PERSONAL -->
+            <section id="view-profile" class="hidden space-y-6">
+                <div class="bg-[#121824] border border-slate-800/80 p-6 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <div class="flex items-center gap-3">
+                            <h2 id="profile-trainer-name" class="text-2xl font-extrabold text-white">Entrenador</h2>
+                            <span id="profile-badge-owner" class="hidden text-xs bg-red-600/20 text-red-400 border border-red-600/40 px-2.5 py-1 rounded-lg font-bold">Tu cuenta</span>
+                            <span id="profile-badge-admin" class="hidden text-xs bg-amber-500/20 text-amber-400 border border-amber-500/40 px-2.5 py-1 rounded-lg font-bold">🛡️ Admin</span>
+                        </div>
+                        <p class="text-slate-400 text-xs mt-1">Haz clic en cualquier Pokémon para inspeccionar su ficha detallada de combate.</p>
+                    </div>
+                    <div class="flex items-center gap-3 flex-wrap" id="profile-action-btn-container"></div>
+                </div>
+
+                <div id="password-change-box" class="hidden bg-[#121824] border border-slate-800/80 p-5 rounded-2xl space-y-3">
+                    <h3 class="font-bold text-sm text-white">🔐 Cambiar mi contraseña</h3>
+                    <form onsubmit="changePassword(event)" class="flex flex-col sm:flex-row gap-3">
+                        <input type="password" id="new-pass-input" required placeholder="Nueva contraseña" class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-white text-xs flex-1 focus:outline-none">
+                        <button type="submit" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-4 py-2 rounded-xl text-xs">Actualizar</button>
+                    </form>
+                </div>
+
+                <!-- Pestañas -->
+                <div class="flex gap-2 border-b border-slate-800 pb-3 overflow-x-auto">
+                    <button onclick="switchProfileTab('active')" id="btn-tab-active" class="px-4 py-2 rounded-xl font-bold text-sm transition bg-red-600 text-white shadow">🟢 Activo</button>
+                    <button onclick="switchProfileTab('pc')" id="btn-tab-pc" class="px-4 py-2 rounded-xl font-bold text-sm transition text-slate-400 hover:bg-[#121824]">📦 Caja PC</button>
+                    <button onclick="switchProfileTab('dead')" id="btn-tab-dead" class="px-4 py-2 rounded-xl font-bold text-sm transition text-slate-400 hover:bg-[#121824]">💀 Cementerio</button>
+                    <button onclick="switchProfileTab('stolen')" id="btn-tab-stolen" class="px-4 py-2 rounded-xl font-bold text-sm transition text-slate-400 hover:bg-[#121824]">🏴‍☠️ Robado</button>
+                    <button onclick="switchProfileTab('banned')" id="btn-tab-banned" class="px-4 py-2 rounded-xl font-bold text-sm transition text-slate-400 hover:bg-[#121824]">⛔ Baneado</button>
+                </div>
+
+                <div id="profile-content-active" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+                <div id="profile-content-pc" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+                <div id="profile-content-dead" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+                <div id="profile-content-stolen" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+                <div id="profile-content-banned" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- MODAL DETALLES POKÉMON -->
+    <div id="pokemonDetailsModal" class="hidden fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-50">
+        <div class="bg-[#121824] border border-slate-700/80 rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row relative">
+            <button onclick="closePokemonDetailsModal()" class="absolute top-4 right-4 bg-slate-800 hover:bg-slate-700 text-slate-300 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm z-10 transition">✕</button>
+            
+            <div class="bg-gradient-to-b from-slate-900 to-[#0e131f] p-6 md:w-5/12 flex flex-col items-center justify-between border-r border-slate-800/80 text-center">
+                <div class="w-full text-left">
+                    <span id="detail-modal-id" class="text-xs font-mono font-bold text-slate-500">#0000</span>
+                </div>
+                <div class="my-4 relative">
+                    <div class="w-36 h-36 bg-slate-950 rounded-2xl border border-slate-800 flex items-center justify-center p-3 shadow-inner">
+                        <img id="detail-modal-img" src="" alt="Pokémon" class="w-28 h-28 object-contain">
+                    </div>
+                </div>
+                <div class="w-full space-y-2">
+                    <h3 id="detail-modal-species" class="text-2xl font-black text-white capitalize">Especie</h3>
+                    <p id="detail-modal-nickname" class="text-slate-400 italic text-xs">Mote: -</p>
+                    <div id="detail-modal-types" class="flex justify-center gap-1.5 pt-1"></div>
+                </div>
+                <div class="w-full mt-6 pt-4 border-t border-slate-800/80 text-left text-xs space-y-1.5 text-slate-300">
+                    <div>🌱 Naturaleza: <strong id="detail-modal-nature" class="text-white">-</strong></div>
+                    <div>⚡ Habilidad: <strong id="detail-modal-ability" class="text-red-400">-</strong></div>
+                    <div>📍 Ruta: <strong id="detail-modal-route" class="text-amber-300">-</strong></div>
+                </div>
+            </div>
+
+            <div class="p-6 md:w-7/12 flex flex-col justify-between space-y-6">
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="text-xs font-black tracking-widest text-purple-400 uppercase flex items-center gap-1.5">📊 Stats Base</h4>
+                        <span id="detail-modal-source" class="text-[10px] bg-red-600/20 text-red-400 border border-red-600/40 px-2 py-0.5 rounded font-bold">Personalizado (Lunar)</span>
+                    </div>
+                    <div id="detail-modal-stats" class="space-y-2 text-xs"></div>
+                </div>
+
+                <div>
+                    <h4 class="text-xs font-black tracking-widest text-amber-400 uppercase mb-2 flex items-center gap-1.5">⚡ Debilidades y Resistencias</h4>
+                    <div id="detail-modal-weaknesses" class="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pr-1"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Login -->
+    <div id="authModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-[#121824] border border-slate-800 p-6 rounded-2xl w-full max-w-md shadow-2xl space-y-4">
+            <div>
+                <h3 class="text-lg font-bold text-white">Iniciar Sesión</h3>
+                <p class="text-xs text-slate-400 mt-1">Introduce tu contraseña personal.</p>
+            </div>
+            <form onsubmit="handleLoginSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Entrenador:</label>
+                    <input type="text" id="auth-input-user" readonly class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-slate-300 text-sm font-bold cursor-not-allowed">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Contraseña:</label>
+                    <input type="password" id="auth-input-pass" required placeholder="Contraseña (por defecto 1234)" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-white text-sm focus:outline-none">
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeAuthModal()" class="bg-slate-800 hover:bg-slate-700 px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-300">Cancelar</button>
+                    <button type="submit" class="bg-red-600 hover:bg-red-700 px-5 py-2.5 rounded-xl text-xs font-bold text-white">Entrar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Registrar/Editar Pokémon -->
+    <div id="pokemonModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-[#121824] border border-slate-800 p-6 rounded-2xl w-full max-w-md shadow-2xl space-y-4">
+            <h3 id="modal-pokemon-title" class="text-lg font-bold text-white">Registrar Pokémon</h3>
+            <form id="pokemonForm" onsubmit="savePokemon(event)" class="space-y-3">
+                <input type="hidden" id="pkmn-edit-id">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Especie:</label>
+                    <input type="text" id="pkmn-species" required placeholder="Ej: Blaziken, Hawlucha..." class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-white text-sm focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Mote (Opcional):</label>
+                    <input type="text" id="pkmn-nickname" placeholder="Ej: Fuego" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-white text-sm focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Ruta / Zona:</label>
+                    <input type="text" id="pkmn-route" required placeholder="Ej: Ruta 101" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-white text-sm focus:outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Naturaleza:</label>
+                        <input type="text" id="pkmn-nature" required placeholder="Ej: Firme" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-white text-sm focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Habilidad:</label>
+                        <input type="text" id="pkmn-ability" required placeholder="Ej: Levitación" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-white text-sm focus:outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Estado:</label>
+                    <select id="pkmn-status" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-white text-sm focus:outline-none">
+                        <option value="active">🟢 Equipo Activo</option>
+                        <option value="pc">📦 Caja del PC</option>
+                        <option value="dead">💀 Muerto (Cementerio)</option>
+                        <option value="stolen">🏴‍☠️ Robado</option>
+                        <option value="banned">⛔ Baneado</option>
+                    </select>
+                </div>
+                <div class="flex justify-end gap-2 pt-3">
+                    <button type="button" onclick="closePokemonModal()" class="bg-slate-800 hover:bg-slate-700 px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-300">Cancelar</button>
+                    <button type="submit" class="bg-red-600 hover:bg-red-700 px-5 py-2.5 rounded-xl text-xs font-bold text-white">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Script Principal -->
+    <script>
+        // BASE DE DATOS DE ESTADÍSTICAS MODIFICADAS (DESAFÍO LUNAR)
+        const customLunarStats = {
+            "butterfree": { hp: 60, atk: 45, def: 50, spa: 100, spd: 90, spe: 75 },
+            "beedrill": { hp: 65, atk: 100, def: 40, spa: 45, spd: 80, spe: 90 },
+            "mega-beedrill": { hp: 65, atk: 160, def: 40, spa: 30, spd: 80, spe: 145 },
+            "raticate": { hp: 55, atk: 101, def: 70, spa: 50, spd: 75, spe: 97 },
+            "arbok": { hp: 80, atk: 105, def: 70, spa: 65, spd: 80, spe: 80 },
+            "raichu": { hp: 60, atk: 90, def: 55, spa: 110, spd: 80, spe: 110 },
+            "ninetales": { hp: 75, atk: 55, def: 75, spa: 100, spd: 100, spe: 100 },
+            "wigglytuff": { hp: 140, atk: 70, def: 45, spa: 95, spd: 65, spe: 45 },
+            "parasect": { hp: 100, atk: 95, def: 80, spa: 60, spd: 80, spe: 50 },
+            "dugtrio": { hp: 55, atk: 120, def: 50, spa: 50, spd: 70, spe: 120 },
+            "persian": { hp: 75, atk: 90, def: 60, spa: 65, spd: 65, spe: 115 },
+            "primeape": { hp: 90, atk: 105, def: 60, spa: 60, spd: 70, spe: 95 },
+            "poliwrath": { hp: 100, atk: 115, def: 95, spa: 50, spd: 95, spe: 70 },
+            "farfetch'd": { hp: 95, atk: 100, def: 55, spa: 58, spd: 62, spe: 80 },
+            "dewgong": { hp: 100, atk: 60, def: 90, spa: 70, spd: 100, spe: 60 },
+            "cloyster": { hp: 60, atk: 85, def: 180, spa: 45, spd: 95, spe: 60 },
+            "marowak": { hp: 100, atk: 95, def: 110, spa: 50, spd: 80, spe: 45 },
+            "weezing": { hp: 75, atk: 90, def: 120, spa: 85, spd: 70, spe: 60 },
+            "ditto": { hp: 75, atk: 75, def: 75, spa: 75, spd: 75, spe: 75 },
+            "kabutops": { hp: 70, atk: 125, def: 105, spa: 45, spd: 80, spe: 80 },
+            "meganium": { hp: 110, atk: 62, def: 105, spa: 83, spd: 105, spe: 70 },
+            "typhlosion": { hp: 78, atk: 74, def: 78, spa: 115, spd: 85, spe: 105 },
+            "feraligatr": { hp: 105, atk: 105, def: 100, spa: 65, spd: 85, spe: 75 },
+            "furret": { hp: 85, atk: 95, def: 65, spa: 45, spd: 55, spe: 95 },
+            "noctowl": { hp: 120, atk: 50, def: 50, spa: 95, spd: 95, spe: 70 },
+            "ledian": { hp: 80, atk: 35, def: 65, spa: 75, spd: 110, spe: 85 },
+            "ariados": { hp: 70, atk: 105, def: 70, spa: 60, spd: 60, spe: 75 },
+            "xatu": { hp: 75, atk: 55, def: 80, spa: 95, spd: 80, spe: 95 },
+            "bellossom": { hp: 85, atk: 60, def: 105, spa: 90, spd: 110, spe: 50 },
+            "azumarill": { hp: 110, atk: 80, def: 80, spa: 60, spd: 80, spe: 50 },
+            "sudowoodo": { hp: 80, atk: 110, def: 115, spa: 20, spd: 85, spe: 20 },
+            "skiploom": { hp: 65, atk: 45, def: 70, spa: 45, spd: 65, spe: 90 },
+            "jumpluff": { hp: 100, atk: 55, def: 75, spa: 55, spd: 95, spe: 120 },
+            "sunflora": { hp: 95, atk: 75, def: 80, spa: 115, spd: 85, spe: 30 },
+            "quagsire": { hp: 115, atk: 85, def: 95, spa: 65, spd: 85, spe: 35 },
+            "wobbuffet": { hp: 200, atk: 33, def: 70, spa: 33, spd: 70, spe: 33 },
+            "girafarig": { hp: 70, atk: 65, def: 65, spa: 110, spd: 65, spe: 95 },
+            "dunsparce": { hp: 115, atk: 80, def: 80, spa: 65, spd: 75, spe: 45 },
+            "granbull": { hp: 110, atk: 120, def: 75, spa: 60, spd: 70, spe: 45 },
+            "qwilfish": { hp: 65, atk: 115, def: 80, spa: 55, spd: 55, spe: 95 },
+            "magcargo": { hp: 95, atk: 40, def: 120, spa: 115, spd: 100, spe: 30 },
+            "corsola": { hp: 85, atk: 55, def: 105, spa: 65, spd: 105, spe: 35 },
+            "delibird": { hp: 80, atk: 95, def: 45, spa: 95, spd: 45, spe: 103 },
+            "smeargle": { hp: 90, atk: 90, def: 70, spa: 40, spd: 70, spe: 90 },
+            "mightyena": { hp: 80, atk: 115, def: 70, spa: 30, spd: 60, spe: 95 },
+            "beautifly": { hp: 60, atk: 70, def: 50, spa: 120, spd: 50, spe: 90 },
+            "dustox": { hp: 85, atk: 50, def: 70, spa: 50, spd: 120, spe: 65 },
+            "ludicolo": { hp: 90, atk: 70, def: 70, spa: 100, spd: 100, spe: 70 },
+            "shiftry": { hp: 90, atk: 100, def: 70, spa: 70, spd: 70, spe: 100 },
+            "swellow": { hp: 80, atk: 105, def: 60, spa: 50, spd: 50, spe: 125 },
+            "pelipper": { hp: 120, atk: 50, def: 100, spa: 85, spd: 80, spe: 65 },
+            "masquerain": { hp: 70, atk: 60, def: 62, spa: 106, spd: 112, spe: 75 },
+            "breloom": { hp: 60, atk: 130, def: 80, spa: 60, spd: 60, spe: 90 },
+            "slaking": { hp: 140, atk: 115, def: 110, spa: 80, spd: 70, spe: 85 },
+            "exploud": { hp: 130, atk: 55, def: 70, spa: 120, spd: 75, spe: 55 },
+            "delcatty": { hp: 70, atk: 80, def: 90, spa: 45, spd: 100, spe: 85 },
+            "sableye": { hp: 100, atk: 75, def: 90, spa: 55, spd: 90, spe: 50 },
+            "mawile": { hp: 85, atk: 115, def: 95, spa: 55, spd: 75, spe: 55 },
+            "mega-mawile": { hp: 85, atk: 140, def: 125, spa: 80, spd: 95, spe: 55 },
+            "medicham": { hp: 80, atk: 100, def: 75, spa: 60, spd: 75, spe: 90 },
+            "mega-medicham": { hp: 80, atk: 140, def: 85, spa: 75, spd: 85, spe: 115 },
+            "swalot": { hp: 110, atk: 55, def: 83, spa: 94, spd: 83, spe: 55 },
+            "sharpedo": { hp: 70, atk: 125, def: 60, spa: 70, spd: 60, spe: 115 },
+            "camerupt": { hp: 130, atk: 50, def: 80, spa: 135, spd: 85, spe: 20 },
+            "flygon": { hp: 80, atk: 85, def: 70, spa: 120, spd: 70, spe: 110 },
+            "cacturne": { hp: 105, atk: 80, def: 60, spa: 120, spd: 60, spe: 55 },
+            "altaria": { hp: 95, atk: 70, def: 90, spa: 70, spd: 105, spe: 70 },
+            "mega-altaria": { hp: 95, atk: 110, def: 110, spa: 110, spd: 105, spe: 70 },
+            "whiscash": { hp: 150, atk: 75, def: 75, spa: 75, spd: 75, spe: 40 },
+            "crawdaunt": { hp: 85, atk: 120, def: 85, spa: 80, spd: 55, spe: 55 },
+            "kecleon": { hp: 90, atk: 85, def: 85, spa: 60, spd: 120, spe: 40 },
+            "banette": { hp: 100, atk: 115, def: 70, spa: 80, spd: 65, spe: 50 },
+            "mega-banette": { hp: 100, atk: 150, def: 100, spa: 80, spd: 100, spe: 50 },
+            "tropius": { hp: 120, atk: 50, def: 83, spa: 90, spd: 87, spe: 50 },
+            "chimecho": { hp: 70, atk: 50, def: 70, spa: 105, spd: 80, spe: 105 },
+            "kricketune": { hp: 95, atk: 85, def: 51, spa: 55, spd: 51, spe: 105 },
+            "pachirisu": { hp: 90, atk: 45, def: 90, spa: 65, spd: 90, spe: 95 },
+            "lumineon": { hp: 90, atk: 69, def: 76, spa: 69, spd: 85, spe: 91 },
+            "mothim": { hp: 90, atk: 100, def: 50, spa: 60, spd: 50, spe: 105 },
+            "cherrim": { hp: 70, atk: 60, def: 117, spa: 93, spd: 80, spe: 70 },
+            "lopunny": { hp: 65, atk: 96, def: 84, spa: 54, spd: 96, spe: 105 },
+            "mega-lopunny": { hp: 65, atk: 146, def: 94, spa: 54, spd: 96, spe: 145 },
+            "purugly": { hp: 105, atk: 85, def: 65, spa: 64, spd: 59, spe: 112 },
+            "chatot": { hp: 86, atk: 65, def: 45, spa: 107, spd: 42, spe: 115 },
+            "arceus": { hp: 125, atk: 100, def: 140, spa: 100, spd: 140, spe: 95 },
+            "serperior": { hp: 75, atk: 50, def: 96, spa: 105, spd: 96, spe: 113 },
+            "emboar": { hp: 130, atk: 130, def: 85, spa: 60, spd: 85, spe: 45 },
+            "samurott": { hp: 75, atk: 110, def: 75, spa: 110, spd: 75, spe: 90 },
+            "pidove": { hp: 55, atk: 65, def: 50, spa: 36, spd: 30, spe: 48 },
+            "tranquill": { hp: 72, atk: 87, def: 62, spa: 50, spd: 42, spe: 70 },
+            "unfezant": { hp: 80, atk: 120, def: 70, spa: 65, spd: 55, spe: 100 },
+            "audino": { hp: 130, atk: 60, def: 90, spa: 60, spd: 90, spe: 50 },
+            "mega-audino": { hp: 130, atk: 60, def: 130, spa: 80, spd: 130, spe: 50 },
+            "whimsicott": { hp: 90, atk: 50, def: 75, spa: 70, spd: 95, spe: 120 },
+            "basculin": { hp: 75, atk: 110, def: 65, spa: 60, spd: 60, spe: 120 },
+            "maractus": { hp: 115, atk: 75, def: 67, spa: 116, spd: 67, spe: 40 },
+            "dwebble": { hp: 80, atk: 65, def: 85, spa: 35, spd: 35, spe: 55 },
+            "crustle": { hp: 100, atk: 90, def: 125, spa: 65, spd: 75, spe: 45 },
+            "carracosta": { hp: 85, atk: 120, def: 130, spa: 60, spd: 85, spe: 20 },
+            "trubbish": { hp: 80, atk: 50, def: 62, spa: 40, spd: 62, spe: 65 },
+            "garbodor": { hp: 110, atk: 100, def: 82, spa: 60, spd: 82, spe: 66 },
+            "ducklett": { hp: 82, atk: 44, def: 50, spa: 44, spd: 50, spe: 60 },
+            "swanna": { hp: 100, atk: 100, def: 63, spa: 54, spd: 63, spe: 120 },
+            "emolga": { hp: 62, atk: 75, def: 60, spa: 95, spd: 60, spe: 123 },
+            "beheeyem": { hp: 90, atk: 70, def: 75, spa: 125, spd: 100, spe: 40 },
+            "stunfisk": { hp: 120, atk: 65, def: 85, spa: 75, spd: 105, spe: 30 },
+            "druddigon": { hp: 110, atk: 120, def: 85, spa: 60, spd: 85, spe: 40 },
+            "heatmor": { hp: 95, atk: 75, def: 70, spa: 125, spd: 70, spe: 65 },
+            "vivillon": { hp: 100, atk: 50, def: 50, spa: 100, spd: 50, spe: 100 },
+            "furfrou": { hp: 80, atk: 75, def: 85, spa: 65, spd: 90, spe: 105 },
+            "aegislash": { hp: 60, atk: 140, def: 50, spa: 90, spd: 50, spe: 130 },
+            "aromatisse": { hp: 130, atk: 65, def: 60, spa: 110, spd: 75, spe: 40 },
+            "slurpuff": { hp: 130, atk: 110, def: 75, spa: 65, spd: 60, spe: 40 },
+            "malamar": { hp: 105, atk: 105, def: 88, spa: 64, spd: 75, spe: 63 },
+            "barbaracle": { hp: 100, atk: 110, def: 125, spa: 55, spd: 70, spe: 50 },
+            "aurorus": { hp: 123, atk: 77, def: 72, spa: 99, spd: 92, spe: 58 },
+            "dedenne": { hp: 77, atk: 58, def: 57, spa: 101, spd: 67, spe: 115 },
+            "klefki": { hp: 90, atk: 80, def: 95, spa: 80, spd: 95, spe: 60 },
+            "decidueye": { hp: 70, atk: 120, def: 75, spa: 70, spd: 75, spe: 120 },
+            "vikavolt": { hp: 85, atk: 60, def: 90, spa: 135, spd: 90, spe: 40 },
+            "crabminable": { hp: 100, atk: 130, def: 85, spa: 60, spd: 85, spe: 40 },
+            "oricorio": { hp: 75, atk: 60, def: 70, spa: 100, spd: 70, spe: 100 },
+            "ribombee": { hp: 60, atk: 55, def: 60, spa: 110, spd: 70, spe: 125 },
+            "lurantis": { hp: 95, atk: 110, def: 90, spa: 70, spd: 90, spe: 45 },
+            "shiinotic": { hp: 100, atk: 30, def: 100, spa: 90, spd: 100, spe: 30 },
+            "comfey": { hp: 50, atk: 50, def: 105, spa: 80, spd: 105, spe: 100 },
+            "oranguru": { hp: 110, atk: 50, def: 100, spa: 90, spd: 110, spe: 40 },
+            "passimian": { hp: 90, atk: 120, def: 90, spa: 40, spd: 60, spe: 100 },
+            "palossand": { hp: 90, atk: 70, def: 110, spa: 90, spd: 110, spe: 30 },
+            "komala": { hp: 100, atk: 100, def: 95, spa: 45, spd: 95, spe: 65 },
+            "togedemaru": { hp: 85, atk: 98, def: 78, spa: 30, spd: 78, spe: 106 },
+            "mimikyu": { hp: 75, atk: 90, def: 80, spa: 50, spd: 105, spe: 100 },
+            "drampa": { hp: 100, atk: 60, def: 85, spa: 135, spd: 85, spe: 35 }
+        };
+
+        const officialTrainers = [
+            "Rexitoo", "Faxzer0", "Redsam", "Alex96", 
+            "Poke589", "ikerglz_", "Pedro2707", "Faze_Pedro2009", "Minimuesli", "Tiosanto", "Demonn1", "imxteoxyz", "Sebas Emperor", "Yeibrami", "Reejaas93", "frannsann", "_Crema", "Ima", "Uligremh3", "Thiagoo", "gogobaneado", "enrique_pastor11", "Niyhu", "Pewpew"
+        ];
+
+        let accounts = JSON.parse(localStorage.getItem('nuzlocke_accounts_v11')) || {};
+        officialTrainers.forEach(t => { if (!accounts[t]) accounts[t] = "1234"; });
+        localStorage.setItem('nuzlocke_accounts_v11', JSON.stringify(accounts));
+
+        let tournamentData = JSON.parse(localStorage.getItem('nuzlocke_data_v11')) || {};
+        let currentUser = localStorage.getItem('nuzlocke_current_user_v11') || null;
+        let viewingTrainer = null;
+        let selectedLoginTrainer = null;
+        let currentProfileTab = 'active';
+
+        function getPokemonSpriteUrl(speciesName) {
+            if (!speciesName) return "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png";
+            const formatted = speciesName.toLowerCase().trim()
+                .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                .replace(/[^a-z0-9]/g, "");
+            return `https://img.pokemondb.net/sprites/sword-shield/icon/${formatted}.png`;
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            updateAuthHeader();
+            renderHomeRanking();
+            renderParticipantsGrid();
+            updateGlobalStats();
+            document.getElementById('stat-total-participants').textContent = officialTrainers.length;
+        });
+
+        function saveDataToStorage() {
+            localStorage.setItem('nuzlocke_data_v11', JSON.stringify(tournamentData));
+            localStorage.setItem('nuzlocke_accounts_v11', JSON.stringify(accounts));
+        }
+
+        function exportData() {
+            const dataToExport = { tournamentData, accounts };
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dataToExport));
+            const dl = document.createElement('a');
+            dl.setAttribute("href", dataStr);
+            dl.setAttribute("download", "nuzlocke_backup.json");
+            document.body.appendChild(dl); dl.click(); dl.remove();
+        }
+
+        function switchView(viewName) {
+            ['home', 'participants', 'bracket', 'playoffs', 'rules', 'stats', 'profile'].forEach(v => {
+                const el = document.getElementById(`view-${v}`);
+                if (el) el.classList.add('hidden');
+                const nav = document.getElementById(`nav-${v}`);
+                if (nav) nav.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-900/80 hover:text-white";
+            });
+            const target = document.getElementById(`view-${viewName}`);
+            if (target) target.classList.remove('hidden');
+            const activeNav = document.getElementById(`nav-${viewName}`);
+            if (activeNav) activeNav.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition bg-red-600/10 text-red-500 border border-red-600/30";
+
+            if (viewName === 'home') renderHomeRanking();
+            if (viewName === 'participants') renderParticipantsGrid();
+            if (viewName === 'stats') updateGlobalStats();
+        }
+
+        function updateAuthHeader() {
+            const container = document.getElementById('auth-header-container');
+            if (currentUser) {
+                const isAdmin = currentUser === "Rexitoo";
+                container.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <button onclick="viewingTrainer = currentUser; switchView('profile');" class="bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl text-xs font-bold text-emerald-400 flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span> ${isAdmin ? '🛡️ ' : ''}${currentUser}
+                        </button>
+                        <button onclick="logout()" class="text-slate-400 hover:text-red-400 text-xs font-semibold px-2 py-1">Salir</button>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `<span class="text-xs text-slate-400 italic hidden lg:inline">Selecciona tu usuario</span>`;
+            }
+        }
+
+        function checkAndOpenProfile() {
+            if (currentUser) { viewingTrainer = currentUser; switchView('profile'); }
+            else { switchView('participants'); alert('Inicia sesión seleccionando tu entrenador.'); }
+        }
+
+        function openLoginModal(trainerName) {
+            selectedLoginTrainer = trainerName;
+            document.getElementById('auth-input-user').value = trainerName;
+            document.getElementById('auth-input-pass').value = '';
+            document.getElementById('authModal').classList.remove('hidden');
+        }
+        function closeAuthModal() { document.getElementById('authModal').classList.add('hidden'); }
+
+        function handleLoginSubmit(e) {
+            e.preventDefault();
+            const pass = document.getElementById('auth-input-pass').value;
+            if (accounts[selectedLoginTrainer] === pass) {
+                currentUser = selectedLoginTrainer;
+                localStorage.setItem('nuzlocke_current_user_v11', currentUser);
+                closeAuthModal(); updateAuthHeader();
+                viewingTrainer = currentUser; switchView('profile');
+            } else { alert('Contraseña incorrecta.'); }
+        }
+
+        function changePassword(e) {
+            e.preventDefault();
+            const newPass = document.getElementById('new-pass-input').value;
+            if (newPass.trim().length > 0 && currentUser) {
+                accounts[currentUser] = newPass;
+                saveDataToStorage(); alert('¡Contraseña actualizada!');
+                document.getElementById('new-pass-input').value = '';
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('nuzlocke_current_user_v11');
+            updateAuthHeader(); switchView('participants');
+        }
+
+        function countActiveDeaths(trainerName) {
+            return (tournamentData[trainerName] || []).filter(p => p.status === 'dead').length;
+        }
+
+        function renderHomeRanking() {
+            const list = document.getElementById('home-ranking-list');
+            list.innerHTML = '';
+            const sortedTrainers = [...officialTrainers].sort((a, b) => countActiveDeaths(a) - countActiveDeaths(b));
+
+            sortedTrainers.forEach((t, idx) => {
+                const deads = countActiveDeaths(t);
+                const item = document.createElement('div');
+                item.className = "bg-slate-900/60 border border-slate-800/60 p-4 rounded-xl flex items-center justify-between hover:border-slate-700 transition cursor-pointer";
+                item.onclick = () => { viewingTrainer = t; switchView('profile'); };
+                item.innerHTML = `
+                    <div class="flex items-center gap-4">
+                        <span class="font-black text-slate-500 w-6 text-center">${idx + 1}</span>
+                        <div class="w-8 h-8 rounded-lg bg-red-600/20 border border-red-600/30 flex items-center justify-center font-bold text-red-400 text-xs">${t === 'Rexitoo' ? '🛡️' : t.charAt(0)}</div>
+                        <div>
+                            <div class="font-bold text-white text-sm">${t}</div>
+                            <div class="text-[11px] text-slate-400">Muertes este tramo: <span class="text-red-400 font-semibold">${deads}</span></div>
+                        </div>
+                    </div>
+                    <div class="text-xs font-mono font-bold text-slate-400 bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800">Ver Ficha</div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function renderParticipantsGrid() {
+            const grid = document.getElementById('participants-grid');
+            grid.innerHTML = '';
+            const searchVal = document.getElementById('pokemon-search-input') ? document.getElementById('pokemon-search-input').value.toLowerCase().trim() : '';
+
+            officialTrainers.forEach(t => {
+                const pkmns = tournamentData[t] || [];
+                
+                if (searchVal) {
+                    const matchesTrainer = t.toLowerCase().includes(searchVal);
+                    const matchesPokemon = pkmns.some(p => p.species.toLowerCase().includes(searchVal) || (p.nickname && p.nickname.toLowerCase().includes(searchVal)));
+                    if (!matchesTrainer && !matchesPokemon) return;
+                }
+
+                const deads = countActiveDeaths(t);
+                const actives = pkmns.filter(p => p.status === 'active').length;
+                const isAdmin = t === 'Rexitoo';
+
+                const card = document.createElement('div');
+                card.className = "bg-[#121824] border border-slate-800/80 p-5 rounded-2xl shadow-lg flex flex-col justify-between space-y-4 hover:border-slate-700 transition";
+                card.innerHTML = `
+                    <div>
+                        <div class="flex justify-between items-start">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-red-600/20 border border-red-600/40 flex items-center justify-center font-extrabold text-red-400">${isAdmin ? '🛡️' : t.charAt(0)}</div>
+                                <div>
+                                    <h3 class="font-bold text-white text-base">${t} ${isAdmin ? '<span class="text-amber-400 text-[10px]">(Admin)</span>' : ''}</h3>
+                                    <span class="text-[11px] text-emerald-400 font-medium">${actives} Activos</span>
+                                </div>
+                            </div>
+                            ${currentUser === t ? '<span class="text-[10px] bg-red-600/20 text-red-400 border border-red-600/40 px-2 py-0.5 rounded font-bold">Tú</span>' : ''}
+                        </div>
+                        <div class="mt-4 flex items-center justify-between text-xs bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+                            <span class="text-slate-400">Muertes tramo actual:</span>
+                            <span class="text-red-400 font-black text-sm">${deads} 💀</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between pt-3 border-t border-slate-800/60 text-xs">
+                        <span class="text-slate-400">Total reg: <strong class="text-white">${pkmns.length}</strong></span>
+                        <div class="flex gap-2">
+                            <button onclick="viewingTrainer = '${t}'; switchView('profile');" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-xl font-semibold">Ver ficha</button>
+                            ${currentUser !== t ? `<button onclick="openLoginModal('${t}')" class="bg-red-600/20 hover:bg-red-600/40 text-red-400 px-3 py-1.5 rounded-xl font-semibold">Entrar</button>` : ''}
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function updateGlobalStats() {
+            let totalGlobalDeaths = 0;
+            let minD = { name: '-', deaths: 999 };
+            let maxD = { name: '-', deaths: -1 };
+            let speciesCount = {};
+
+            officialTrainers.forEach(t => {
+                const deads = countActiveDeaths(t);
+                totalGlobalDeaths += deads;
+                if (deads < minD.deaths) minD = { name: t, deaths: deads };
+                if (deads > maxD.deaths) maxD = { name: t, deaths: deads };
+
+                (tournamentData[t] || []).forEach(p => {
+                    if (p.species && p.status !== 'cleared_death') {
+                        const cleanName = p.species.trim();
+                        speciesCount[cleanName] = (speciesCount[cleanName] || 0) + 1;
+                    }
+                });
+            });
+
+            document.getElementById('stat-total-deaths').textContent = totalGlobalDeaths;
+            document.getElementById('stat-fewest-deaths').textContent = `${minD.name} (${minD.deaths} muertes)`;
+            document.getElementById('stat-most-deaths').textContent = `${maxD.name} (${maxD.deaths} muertes)`;
+
+            const mostUsedContainer = document.getElementById('stat-most-used-pokemons');
+            mostUsedContainer.innerHTML = '';
+            const sortedSpecies = Object.entries(speciesCount).sort((a, b) => b[1] - a[1]).slice(0, 6);
+
+            if (sortedSpecies.length === 0) {
+                mostUsedContainer.innerHTML = `<div class="text-xs text-slate-500 italic col-span-full text-center py-4">Sin registros aún.</div>`;
+            } else {
+                sortedSpecies.forEach(([species, count], idx) => {
+                    const spriteUrl = getPokemonSpriteUrl(species);
+                    const card = document.createElement('div');
+                    card.className = "bg-slate-900/60 border border-slate-800/80 p-3 rounded-xl flex items-center justify-between";
+                    card.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs font-black text-slate-500 w-4">#${idx + 1}</span>
+                            <div class="w-10 h-10 bg-slate-950 rounded-lg border border-slate-800 flex items-center justify-center p-1">
+                                <img src="${spriteUrl}" alt="${species}" class="w-8 h-8 object-contain" onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png'">
+                            </div>
+                            <div>
+                                <div class="font-bold text-white text-sm">${species}</div>
+                                <div class="text-[11px] text-slate-400">Registros: <span class="text-red-400 font-semibold">${count}</span></div>
+                            </div>
+                        </div>
+                    `;
+                    mostUsedContainer.appendChild(card);
+                });
+            }
+        }
+
+        function switchProfileTab(tab) {
+            currentProfileTab = tab;
+            ['active', 'pc', 'dead', 'stolen', 'banned'].forEach(t => {
+                document.getElementById(`profile-content-${t}`).classList.add('hidden');
+                document.getElementById(`btn-tab-${t}`).className = "px-4 py-2 rounded-xl font-bold text-sm transition text-slate-400 hover:bg-[#121824]";
+            });
+            document.getElementById(`profile-content-${tab}`).classList.remove('hidden');
+            document.getElementById(`btn-tab-${tab}`).className = "px-4 py-2 rounded-xl font-bold text-sm transition bg-red-600 text-white shadow";
+        }
+
+        const originalSwitchView = switchView;
+        switchView = function(viewName) {
+            originalSwitchView(viewName);
+            if (viewName === 'profile') renderProfileView();
+        };
+
+        function renderProfileView() {
+            if (!viewingTrainer) viewingTrainer = officialTrainers[0];
+            document.getElementById('profile-trainer-name').textContent = viewingTrainer;
+            
+            const isOwner = (currentUser === viewingTrainer);
+            const isAdmin = (currentUser === "Rexitoo");
+
+            document.getElementById('profile-badge-owner').classList.toggle('hidden', !isOwner);
+            document.getElementById('profile-badge-admin').classList.toggle('hidden', !isAdmin);
+            document.getElementById('password-change-box').classList.toggle('hidden', !isOwner);
+
+            const actionContainer = document.getElementById('profile-action-btn-container');
+            let actionHtml = '';
+            if (isOwner) {
+                actionHtml += `<button onclick="openPokemonModal()" class="bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs shadow flex items-center gap-2"><span>+</span> Registrar Pokémon</button>`;
+            }
+            if (isAdmin) {
+                actionHtml += `<button onclick="adminResetTramoDeaths('${viewingTrainer}')" class="bg-amber-600/20 hover:bg-amber-600/40 text-amber-400 border border-amber-600/40 font-bold px-4 py-2.5 rounded-xl text-xs flex items-center gap-2"><span>🔄</span> [ADMIN] Nuevo tramo</button>`;
+            }
+            actionContainer.innerHTML = actionHtml;
+
+            const pkmns = tournamentData[viewingTrainer] || [];
+            ['active', 'pc', 'dead', 'stolen', 'banned'].forEach(t => document.getElementById(`profile-content-${t}`).innerHTML = '');
+
+            pkmns.forEach(p => {
+                const spriteUrl = getPokemonSpriteUrl(p.species);
+                const isHistoricalDead = (p.status === 'dead_history');
+                const effectiveStatus = isHistoricalDead ? 'dead' : p.status;
+
+                const card = document.createElement('div');
+                card.className = "bg-slate-900/60 border border-slate-800/80 p-4 rounded-xl flex justify-between items-center cursor-pointer hover:border-slate-600 transition";
+                
+                card.onclick = (e) => {
+                    if (e.target.tagName === 'BUTTON') return;
+                    openPokemonDetailsModal(p);
+                };
+
+                card.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 bg-slate-950 rounded-xl border border-slate-800 flex items-center justify-center p-1">
+                            <img src="${spriteUrl}" alt="${p.species}" class="w-10 h-10 object-contain" onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png'">
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-white text-sm">${p.species}</span>
+                                ${p.nickname ? `<span class="text-slate-400 italic text-xs">"${p.nickname}"</span>` : ''}
+                                ${isHistoricalDead ? '<span class="text-[10px] bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded">Tramo ant.</span>' : ''}
+                            </div>
+                            <div class="text-[11px] text-slate-400 mt-1 space-y-0.5">
+                                <div>📍 <span class="text-amber-300">${p.route}</span></div>
+                                <div>🧬 <span class="text-slate-200">${p.nature}</span> | ⚡ <span class="text-red-400">${p.ability}</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    ${isOwner || isAdmin ? `
+                        <div class="flex flex-col gap-1.5">
+                            ${isOwner ? `<button onclick="editPokemon(${p.id})" class="text-slate-300 hover:text-white text-xs px-2.5 py-1 bg-slate-800 rounded font-medium">Editar</button>` : ''}
+                            <button onclick="deletePokemon(${p.id})" class="text-red-400 text-xs px-2.5 py-1 bg-red-950/40 rounded border border-red-950/60">Borrar</button>
+                        </div>
+                    ` : ''}
+                `;
+
+                if (effectiveStatus === 'active') document.getElementById('profile-content-active').appendChild(card);
+                else if (effectiveStatus === 'pc') document.getElementById('profile-content-pc').appendChild(card);
+                else if (effectiveStatus === 'dead') document.getElementById('profile-content-dead').appendChild(card);
+                else if (effectiveStatus === 'stolen') document.getElementById('profile-content-stolen').appendChild(card);
+                else if (effectiveStatus === 'banned') document.getElementById('profile-content-banned').appendChild(card);
+            });
+        }
+
+        async function openPokemonDetailsModal(p) {
+            const modal = document.getElementById('pokemonDetailsModal');
+            modal.classList.remove('hidden');
+
+            document.getElementById('detail-modal-species').textContent = p.species;
+            document.getElementById('detail-modal-nickname').textContent = p.nickname ? `Mote: "${p.nickname}"` : 'Sin mote';
+            document.getElementById('detail-modal-nature').textContent = p.nature || '-';
+            document.getElementById('detail-modal-ability').textContent = p.ability || '-';
+            document.getElementById('detail-modal-route').textContent = p.route || '-';
+            document.getElementById('detail-modal-img').src = getPokemonSpriteUrl(p.species);
+            document.getElementById('detail-modal-id').textContent = '#----';
+
+            const queryName = p.species.toLowerCase().trim()
+                .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                .replace(/[^a-z0-9]/g, "");
+
+            // 1. COMPROBAR SI ESTÁ EN LAS ESTADÍSTICAS MODIFICADAS DEL EXCEL (DESAFÍO LUNAR)
+            const customStats = customLunarStats[queryName];
+
+            if (customStats) {
+                // Si está personalizado en vuestro Excel, usamos vuestros valores directamente
+                document.getElementById('detail-modal-source').textContent = "Personalizado (Lunar)";
+                document.getElementById('detail-modal-source').className = "text-[10px] bg-red-600/20 text-red-400 border border-red-600/40 px-2 py-0.5 rounded font-bold";
+                
+                renderStatsAndTypes(customStats, queryName, p.species);
+            } else {
+                // Si no está en el Excel, tiramos de la PokéAPI
+                document.getElementById('detail-modal-source').textContent = "PokéAPI (Original)";
+                document.getElementById('detail-modal-source').className = "text-[10px] bg-blue-600/20 text-blue-400 border border-blue-600/40 px-2 py-0.5 rounded font-bold";
+
+                document.getElementById('detail-modal-types').innerHTML = '<span class="text-xs text-slate-500">Cargando tipos...</span>';
+                document.getElementById('detail-modal-stats').innerHTML = '<div class="text-slate-500 text-xs">Cargando estadísticas...</div>';
+                document.getElementById('detail-modal-weaknesses').innerHTML = '<span class="text-xs text-slate-500">Calculando debilidades...</span>';
+
+                try {
+                    const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${queryName}`);
+                    if (!res.ok) throw new Error("Pokémon no encontrado en la API");
+                    const data = await res.json();
+
+                    document.getElementById('detail-modal-id').textContent = `#${String(data.id).padStart(4, '0')}`;
+                    
+                    const apiStats = {
+                        hp: data.stats.find(s => s.stat.name === 'hp').base_stat,
+                        atk: data.stats.find(s => s.stat.name === 'attack').base_stat,
+                        def: data.stats.find(s => s.stat.name === 'defense').base_stat,
+                        spa: data.stats.find(s => s.stat.name === 'special-attack').base_stat,
+                        spd: data.stats.find(s => s.stat.name === 'special-defense').base_stat,
+                        spe: data.stats.find(s => s.stat.name === 'speed').base_stat
+                    };
+
+                    renderStatsAndTypes(apiStats, queryName, p.species, data.types.map(t => t.type.url));
+
+                } catch (err) {
+                    document.getElementById('detail-modal-types').innerHTML = '<span class="text-xs text-red-400">Tipo no disponible</span>';
+                    document.getElementById('detail-modal-stats').innerHTML = '<div class="text-xs text-slate-500">Stats no disponibles.</div>';
+                    document.getElementById('detail-modal-weaknesses').innerHTML = '<span class="text-xs text-slate-500">No se pudieron calcular debilidades.</span>';
+                }
+            }
+        }
+
+        async function renderStatsAndTypes(statsObj, queryName, speciesName, preloadedTypeUrls = null) {
+            // Renderizar barras de stats base
+            const statMapping = [
+                { key: 'hp', name: 'PS' },
+                { key: 'atk', name: 'Ataque' },
+                { key: 'def', name: 'Defensa' },
+                { key: 'spa', name: 'At. Esp.' },
+                { key: 'spd', name: 'Def. Esp.' },
+                { key: 'spe', name: 'Velocidad' }
+            ];
+
+            let statsHtml = '';
+            statMapping.forEach(s => {
+                const val = statsObj[s.key] || 0;
+                const percentage = Math.min(Math.round((val / 200) * 100), 100);
+                statsHtml += `
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="w-20 text-slate-400 font-semibold">${s.name}</span>
+                        <span class="w-8 text-right font-bold text-white">${val}</span>
+                        <div class="flex-1 bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-800/60">
+                            <div class="bg-red-500 h-full rounded-full" style="width: ${percentage}%"></div>
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('detail-modal-stats').innerHTML = statsHtml;
+
+            // Obtener tipos y debilidades
+            let typeUrls = preloadedTypeUrls;
+            if (!typeUrls) {
+                try {
+                    const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${queryName}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        document.getElementById('detail-modal-id').textContent = `#${String(data.id).padStart(4, '0')}`;
+                        typeUrls = data.types.map(t => t.type.url);
+                        
+                        const typeColors = {
+                            normal: 'bg-zinc-500 text-white', fire: 'bg-orange-600 text-white', water: 'bg-blue-600 text-white',
+                            electric: 'bg-amber-500 text-black font-bold', grass: 'bg-emerald-600 text-white', ice: 'bg-cyan-400 text-black font-bold',
+                            fighting: 'bg-red-700 text-white', poison: 'bg-purple-600 text-white', ground: 'bg-amber-700 text-white',
+                            flying: 'bg-indigo-400 text-white', psychic: 'bg-pink-600 text-white', bug: 'bg-lime-600 text-white',
+                            rock: 'bg-stone-600 text-white', ghost: 'bg-purple-900 text-white', dragon: 'bg-violet-700 text-white',
+                            dark: 'bg-neutral-800 text-white', steel: 'bg-slate-500 text-white', fairy: 'bg-rose-400 text-black font-bold'
+                        };
+
+                        let typesHtml = '';
+                        data.types.forEach(t => {
+                            const tName = t.type.name;
+                            const colorClass = typeColors[tName] || 'bg-slate-700 text-white';
+                            typesHtml += `<span class="text-[10px] uppercase font-extrabold px-3 py-1 rounded-full ${colorClass}">${tName}</span>`;
+                        });
+                        document.getElementById('detail-modal-types').innerHTML = typesHtml;
+                    }
+                } catch(e) {
+                    document.getElementById('detail-modal-types').innerHTML = '<span class="text-xs text-slate-500">Tipos estándar</span>';
+                }
+            }
+
+            if (typeUrls && typeUrls.length > 0) {
+                calculateWeaknessesAndResistances(typeUrls);
+            } else {
+                document.getElementById('detail-modal-weaknesses').innerHTML = '<span class="text-xs text-slate-500">No disponibles.</span>';
+            }
+        }
+
+        async function calculateWeaknessesAndResistances(typeUrls) {
+            try {
+                const typeDataPromises = typeUrls.map(u => fetch(u).then(r => r.json()));
+                const results = await Promise.all(typeDataPromises);
+
+                let relations = {};
+                results.forEach(tData => {
+                    const dr = tData.damage_relations;
+                    dr.double_damage_from.forEach(item => { relations[item.name] = (relations[item.name] || 1) * 2; });
+                    dr.half_damage_from.forEach(item => { relations[item.name] = (relations[item.name] || 1) * 0.5; });
+                    dr.no_damage_from.forEach(item => { relations[item.name] = (relations[item.name] || 1) * 0; });
+                });
+
+                let weakHtml = '';
+                const typeColors = {
+                    normal: 'bg-zinc-500', fire: 'bg-orange-600', water: 'bg-blue-600', electric: 'bg-amber-500 text-black',
+                    grass: 'bg-emerald-600', ice: 'bg-cyan-400 text-black', fighting: 'bg-red-700', poison: 'bg-purple-600',
+                    ground: 'bg-amber-700', flying: 'bg-indigo-400', psychic: 'bg-pink-600', bug: 'bg-lime-600',
+                    rock: 'bg-stone-600', ghost: 'bg-purple-900', dragon: 'bg-violet-700', dark: 'bg-neutral-800',
+                    steel: 'bg-slate-500', fairy: 'bg-rose-400 text-black'
+                };
+
+                const sortedRel = Object.entries(relations).sort((a,b) => b[1] - a[1]);
+
+                sortedRel.forEach(([tName, mult]) => {
+                    if (mult === 1) return;
+                    const bg = typeColors[tName] || 'bg-slate-700';
+                    let textMult = `x${mult}`;
+                    let badgeColor = 'bg-red-500/20 text-red-400 border-red-500/40';
+                    if (mult === 4) { textMult = 'x4'; badgeColor = 'bg-red-600 text-white font-black'; }
+                    else if (mult === 0.5) { textMult = '½'; badgeColor = 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'; }
+                    else if (mult === 0.25) { textMult = '¼'; badgeColor = 'bg-emerald-600 text-white font-black'; }
+                    else if (mult === 0) { textMult = '0'; badgeColor = 'bg-slate-800 text-slate-300 border-slate-700'; }
+
+                    weakHtml += `
+                        <div class="flex items-center gap-1.5 bg-slate-900/90 border border-slate-800 px-2.5 py-1 rounded-xl text-[11px]">
+                            <span class="uppercase font-extrabold px-2 py-0.5 rounded-md ${bg}">${tName.substring(0,4)}</span>
+                            <span class="px-1.5 py-0.5 rounded border text-[10px] ${badgeColor}">${textMult}</span>
+                        </div>
+                    `;
+                });
+
+                document.getElementById('detail-modal-weaknesses').innerHTML = weakHtml || '<span class="text-xs text-slate-400">Sin debilidades destacables.</span>';
+
+            } catch (e) {
+                document.getElementById('detail-modal-weaknesses').innerHTML = '<span class="text-xs text-slate-500">Error al calcular debilidades.</span>';
+            }
+        }
+
+        function closePokemonDetailsModal() {
+            document.getElementById('pokemonDetailsModal').classList.add('hidden');
+        }
+
+        function adminResetTramoDeaths(trainerName) {
+            if (currentUser !== "Rexitoo") return;
+            if (confirm(`[ADMIN] ¿Iniciar nuevo tramo para ${trainerName}? Las muertes actuales pasarán a ser históricas y el contador actual volverá a 0.`)) {
+                if (tournamentData[trainerName]) {
+                    tournamentData[trainerName] = tournamentData[trainerName].map(p => p.status === 'dead' ? { ...p, status: 'dead_history' } : p);
+                    saveDataToStorage();
+                    renderProfileView(); renderHomeRanking(); renderParticipantsGrid(); updateGlobalStats();
+                    alert(`¡Nuevo tramo iniciado para ${trainerName}!`);
+                }
+            }
+        }
+
+        function openPokemonModal() {
+            document.getElementById('modal-pokemon-title').textContent = "Registrar Pokémon";
+            document.getElementById('pkmn-edit-id').value = '';
+            document.getElementById('pokemonForm').reset();
+            document.getElementById('pokemonModal').classList.remove('hidden');
+        }
+
+        function editPokemon(id) {
+            if (!currentUser || viewingTrainer !== currentUser) return;
+            const p = (tournamentData[currentUser] || []).find(item => item.id === id);
+            if (!p) return;
+
+            document.getElementById('modal-pokemon-title').textContent = "Editar Pokémon";
+            document.getElementById('pkmn-edit-id').value = p.id;
+            document.getElementById('pkmn-species').value = p.species;
+            document.getElementById('pkmn-nickname').value = p.nickname || '';
+            document.getElementById('pkmn-route').value = p.route;
+            document.getElementById('pkmn-nature').value = p.nature;
+            document.getElementById('pkmn-ability').value = p.ability;
+            document.getElementById('pkmn-status').value = (p.status === 'dead_history') ? 'dead' : p.status;
+            document.getElementById('pokemonModal').classList.remove('hidden');
+        }
+
+        function closePokemonModal() { document.getElementById('pokemonModal').classList.add('hidden'); document.getElementById('pokemonForm').reset(); }
+
+        function savePokemon(e) {
+            e.preventDefault();
+            if (!currentUser) return;
+            const editId = document.getElementById('pkmn-edit-id').value;
+            const species = document.getElementById('pkmn-species').value.trim();
+            const nickname = document.getElementById('pkmn-nickname').value.trim();
+            const route = document.getElementById('pkmn-route').value.trim();
+            const nature = document.getElementById('pkmn-nature').value.trim();
+            const ability = document.getElementById('pkmn-ability').value.trim();
+            const status = document.getElementById('pkmn-status').value;
+
+            if (!tournamentData[currentUser]) tournamentData[currentUser] = [];
+
+            if (editId) {
+                tournamentData[currentUser] = tournamentData[currentUser].map(p => p.id == editId ? { ...p, species, nickname, route, nature, ability, status } : p);
+            } else {
+                tournamentData[currentUser].push({ id: Date.now(), species, nickname, route, nature, ability, status });
+            }
+
+            saveDataToStorage();
+            closePokemonModal();
+            renderProfileView(); renderHomeRanking(); renderParticipantsGrid(); updateGlobalStats();
+        }
+
+        function deletePokemon(id) {
+            if (!currentUser) return;
+            if (currentUser !== viewingTrainer && currentUser !== "Rexitoo") return;
+            if (confirm('¿Eliminar este registro permanentemente?')) {
+                tournamentData[viewingTrainer] = tournamentData[viewingTrainer].filter(p => p.id !== id);
+                saveDataToStorage();
+                renderProfileView(); renderHomeRanking(); renderParticipantsGrid(); updateGlobalStats();
+            }
+        }
+    </script>
+</body>
+</html>
