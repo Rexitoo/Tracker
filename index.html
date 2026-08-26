@@ -106,9 +106,13 @@
                 </div>
 
                 <div class="bg-[#121824] border border-slate-800/80 rounded-2xl p-6 shadow-xl space-y-4">
-                    <div class="flex items-center justify-between">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                         <h2 class="font-bold text-lg text-white flex items-center gap-2">🏆 Clasificación General</h2>
-                        <span class="text-xs text-slate-400">Menos muertes en este tramo</span>
+                        <!-- Botones de ordenamiento para Menos / Más Muertes[cite: 3] -->
+                        <div class="flex items-center gap-1.5 bg-slate-900 p-1 rounded-xl border border-slate-800">
+                            <button onclick="setRankingSort('fewest')" id="sort-btn-fewest" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-red-600 text-white shadow">💚 Menos Muertes</button>
+                            <button onclick="setRankingSort('most')" id="sort-btn-most" class="px-3 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white">💀 Más Muertes</button>
+                        </div>
                     </div>
                     <div id="home-ranking-list" class="space-y-2"></div>
                 </div>
@@ -119,7 +123,7 @@
                 <div class="bg-[#121824] border border-slate-800/80 px-6 py-4 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
                         <h2 class="font-bold text-lg text-white">Roster completo del torneo</h2>
-                        <p class="text-xs text-slate-400">Haz clic en cualquier participante para ver sus fichas y pincha en sus Pokémon para abrir su tarjeta detallada (con estadísticas y tipos personalizados del Desafío Lunar).</p>
+                        <p class="text-xs text-slate-400">Haz clic en cualquier participante para ver sus fichas y pincha en sus Pokémon para abrir su tarjeta detallada.</p>
                     </div>
                     <div class="w-full sm:w-auto">
                         <input type="text" id="pokemon-search-input" oninput="renderParticipantsGrid()" placeholder="🔍 Buscar Pokémon o Entrenador..." class="w-full sm:w-64 bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-slate-700">
@@ -167,11 +171,25 @@
                         <div id="stat-most-deaths" class="text-red-400 font-bold text-lg mt-1">-</div>
                     </div>
                 </div>
+
+                <!-- Pokémon más usados -->
                 <div class="bg-[#121824] border border-slate-800/80 p-6 rounded-2xl space-y-4 shadow-xl">
                     <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                         <h3 class="font-bold text-base text-white">📊 Pokémon más usados en el torneo</h3>
                     </div>
                     <div id="stat-most-used-pokemons" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+                </div>
+
+                <!-- NUEVO APARTADO: Ranking de muertes (debajo de los Pokémon más usados)[cite: 3] -->
+                <div class="bg-[#121824] border border-slate-800/80 p-6 rounded-2xl space-y-4 shadow-xl">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+                        <h3 class="font-bold text-base text-white flex items-center gap-2">💀 Clasificación de Bajas por Entrenador</h3>
+                        <div class="flex items-center gap-1.5 bg-slate-900 p-1 rounded-xl border border-slate-800">
+                            <button onclick="setStatsRankingSort('fewest')" id="stats-sort-fewest" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-red-600 text-white shadow">💚 Menos Muertes</button>
+                            <button onclick="setStatsRankingSort('most')" id="stats-sort-most" class="px-3 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white">💀 Más Muertes</button>
+                        </div>
+                    </div>
+                    <div id="stats-deaths-ranking-list" class="space-y-2"></div>
                 </div>
             </section>
 
@@ -331,7 +349,6 @@
 
     <!-- Script Principal -->
     <script>
-        // BASE DE DATOS DE ESTADÍSTICAS MODIFICADAS (DESAFÍO LUNAR)
         const customLunarStats = {
             "butterfree": { hp: 60, atk: 45, def: 50, spa: 100, spd: 90, spe: 75 },
             "beedrill": { hp: 65, atk: 100, def: 40, spa: 45, spd: 80, spe: 90 },
@@ -468,7 +485,6 @@
             "drampa": { hp: 100, atk: 60, def: 85, spa: 135, spd: 85, spe: 35 }
         };
 
-        // TIPOS MODIFICADOS (DESAFÍO LUNAR)
         const customLunarTypes = {
             "corsola": ["water"],
             "delibird": ["ice"],
@@ -492,6 +508,8 @@
         let viewingTrainer = null;
         let selectedLoginTrainer = null;
         let currentProfileTab = 'active';
+        let currentRankingSort = 'fewest'; 
+        let statsRankingSort = 'fewest'; // Control específico para la tabla de estadísticas
 
         function getPokemonSpriteUrl(speciesName) {
             if (!speciesName) return "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png";
@@ -537,7 +555,7 @@
 
             if (viewName === 'home') renderHomeRanking();
             if (viewName === 'participants') renderParticipantsGrid();
-            if (viewName === 'stats') updateGlobalStats();
+            if (viewName === 'stats') { updateGlobalStats(); renderStatsDeathsRanking(); }
         }
 
         function updateAuthHeader() {
@@ -601,10 +619,45 @@
             return (tournamentData[trainerName] || []).filter(p => p.status === 'dead').length;
         }
 
+        function setRankingSort(sortType) {
+            currentRankingSort = sortType;
+            const btnFewest = document.getElementById('sort-btn-fewest');
+            const btnMost = document.getElementById('sort-btn-most');
+
+            if (sortType === 'fewest') {
+                btnFewest.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition bg-red-600 text-white shadow";
+                btnMost.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white";
+            } else {
+                btnMost.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition bg-red-600 text-white shadow";
+                btnFewest.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white";
+            }
+            renderHomeRanking();
+        }
+
+        function setStatsRankingSort(sortType) {
+            statsRankingSort = sortType;
+            const btnFewest = document.getElementById('stats-sort-fewest');
+            const btnMost = document.getElementById('stats-sort-most');
+
+            if (sortType === 'fewest') {
+                btnFewest.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition bg-red-600 text-white shadow";
+                btnMost.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white";
+            } else {
+                btnMost.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition bg-red-600 text-white shadow";
+                btnFewest.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white";
+            }
+            renderStatsDeathsRanking();
+        }
+
         function renderHomeRanking() {
             const list = document.getElementById('home-ranking-list');
             list.innerHTML = '';
-            const sortedTrainers = [...officialTrainers].sort((a, b) => countActiveDeaths(a) - countActiveDeaths(b));
+            
+            const sortedTrainers = [...officialTrainers].sort((a, b) => {
+                const deathsA = countActiveDeaths(a);
+                const deathsB = countActiveDeaths(b);
+                return currentRankingSort === 'fewest' ? deathsA - deathsB : deathsB - deathsA;
+            });
 
             sortedTrainers.forEach((t, idx) => {
                 const deads = countActiveDeaths(t);
@@ -618,6 +671,37 @@
                         <div>
                             <div class="font-bold text-white text-sm">${t}</div>
                             <div class="text-[11px] text-slate-400">Muertes este tramo: <span class="text-red-400 font-semibold">${deads}</span></div>
+                        </div>
+                    </div>
+                    <div class="text-xs font-mono font-bold text-slate-400 bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800">Ver Ficha</div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function renderStatsDeathsRanking() {
+            const list = document.getElementById('stats-deaths-ranking-list');
+            if (!list) return;
+            list.innerHTML = '';
+
+            const sortedTrainers = [...officialTrainers].sort((a, b) => {
+                const deathsA = countActiveDeaths(a);
+                const deathsB = countActiveDeaths(b);
+                return statsRankingSort === 'fewest' ? deathsA - deathsB : deathsB - deathsA;
+            });
+
+            sortedTrainers.forEach((t, idx) => {
+                const deads = countActiveDeaths(t);
+                const item = document.createElement('div');
+                item.className = "bg-slate-900/60 border border-slate-800/60 p-4 rounded-xl flex items-center justify-between hover:border-slate-700 transition cursor-pointer";
+                item.onclick = () => { viewingTrainer = t; switchView('profile'); };
+                item.innerHTML = `
+                    <div class="flex items-center gap-4">
+                        <span class="font-black text-slate-500 w-6 text-center">${idx + 1}</span>
+                        <div class="w-8 h-8 rounded-lg bg-red-600/20 border border-red-600/30 flex items-center justify-center font-bold text-red-400 text-xs">${t === 'Rexitoo' ? '🛡️' : t.charAt(0)}</div>
+                        <div>
+                            <div class="font-bold text-white text-sm">${t}</div>
+                            <div class="text-[11px] text-slate-400">Bajas registradas: <span class="text-red-400 font-semibold">${deads}</span></div>
                         </div>
                     </div>
                     <div class="text-xs font-mono font-bold text-slate-400 bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800">Ver Ficha</div>
@@ -907,7 +991,6 @@
 
             let typeUrls = preloadedTypeUrls;
 
-            // VERIFICAR SI TIENE TIPOS PERSONALIZADOS EN EL DESAFÍO LUNAR
             if (customLunarTypes[queryName]) {
                 const customTypesList = customLunarTypes[queryName];
                 let typesHtml = '';
@@ -1006,7 +1089,7 @@
                 if (tournamentData[trainerName]) {
                     tournamentData[trainerName] = tournamentData[trainerName].map(p => p.status === 'dead' ? { ...p, status: 'dead_history' } : p);
                     saveDataToStorage();
-                    renderProfileView(); renderHomeRanking(); renderParticipantsGrid(); updateGlobalStats();
+                    renderProfileView(); renderHomeRanking(); renderParticipantsGrid(); updateGlobalStats(); renderStatsDeathsRanking();
                     alert(`¡Nuevo tramo iniciado para ${trainerName}!`);
                 }
             }
@@ -1058,7 +1141,7 @@
 
             saveDataToStorage();
             closePokemonModal();
-            renderProfileView(); renderHomeRanking(); renderParticipantsGrid(); updateGlobalStats();
+            renderProfileView(); renderHomeRanking(); renderParticipantsGrid(); updateGlobalStats(); renderStatsDeathsRanking();
         }
 
         function deletePokemon(id) {
@@ -1067,9 +1150,9 @@
             if (confirm('¿Eliminar este registro permanentemente?')) {
                 tournamentData[viewingTrainer] = tournamentData[viewingTrainer].filter(p => p.id !== id);
                 saveDataToStorage();
-                renderProfileView(); renderHomeRanking(); renderParticipantsGrid(); updateGlobalStats();
+                renderProfileView(); renderHomeRanking(); renderParticipantsGrid(); updateGlobalStats(); renderStatsDeathsRanking();
             }
-        }
+        } 
     </script>
 </body>
 </html>
