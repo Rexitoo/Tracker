@@ -200,7 +200,7 @@
 
                 <!-- Pestañas -->
                 <div class="flex gap-2 border-b border-slate-800 pb-3 overflow-x-auto">
-                    <button onclick="switchProfileTab('active')" id="btn-tab-active" class="px-4 py-2 rounded-xl font-bold text-sm transition bg-red-600 text-white shadow">🟢 Activo</button>
+                    <button onclick="switchProfileTab('active')" id="btn-tab-active" class="px-4 py-2 rounded-xl font-bold text-sm transition bg-red-600 text-white shadow">🟢 Equipo</button>
                     <button onclick="switchProfileTab('pc')" id="btn-tab-pc" class="px-4 py-2 rounded-xl font-bold text-sm transition text-slate-400 hover:bg-[#121824]">📦 Caja PC</button>
                     <button onclick="switchProfileTab('dead')" id="btn-tab-dead" class="px-4 py-2 rounded-xl font-bold text-sm transition text-slate-400 hover:bg-[#121824]">💀 Cementerio</button>
                     <button onclick="switchProfileTab('stolen')" id="btn-tab-stolen" class="px-4 py-2 rounded-xl font-bold text-sm transition text-slate-400 hover:bg-[#121824]">🏴‍☠️ Robado</button>
@@ -315,7 +315,7 @@
                 <div>
                     <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Estado:</label>
                     <select id="pkmn-status" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-white text-sm focus:outline-none">
-                        <option value="active">🟢 Equipo Activo</option>
+                        <option value="active">🟢 Equipo</option>
                         <option value="pc">📦 Caja del PC</option>
                         <option value="dead">💀 Muerto (Cementerio)</option>
                         <option value="stolen">🏴‍☠️ Robado</option>
@@ -654,7 +654,7 @@
                                 <div class="w-10 h-10 rounded-xl bg-red-600/20 border border-red-600/40 flex items-center justify-center font-extrabold text-red-400">${isAdmin ? '🛡️' : t.charAt(0)}</div>
                                 <div>
                                     <h3 class="font-bold text-white text-base">${t} ${isAdmin ? '<span class="text-amber-400 text-[10px]">(Admin)</span>' : ''}</h3>
-                                    <span class="text-[11px] text-emerald-400 font-medium">${actives} Activos</span>
+                                    <span class="text-[11px] text-emerald-400 font-medium">${actives} en Equipo</span>
                                 </div>
                             </div>
                             ${currentUser === t ? '<span class="text-[10px] bg-red-600/20 text-red-400 border border-red-600/40 px-2 py-0.5 rounded font-bold">Tú</span>' : ''}
@@ -710,11 +710,9 @@
                 sortedSpecies.forEach(([species, count], idx) => {
                     const spriteUrl = getPokemonSpriteUrl(species);
                     const card = document.createElement('div');
-                    // Tarjeta con gran protagonismo visual para el sprite (tamaño enorme)
                     card.className = "bg-slate-900/90 border border-slate-800/80 p-5 rounded-2xl flex flex-col items-center justify-center text-center space-y-3 relative shadow-md";
                     card.innerHTML = `
                         <span class="absolute top-2.5 left-3 text-xs font-black text-slate-500">#${idx + 1}</span>
-                        <!-- Sprite Gigante / Enorme -->
                         <div class="w-28 h-28 bg-slate-950 rounded-2xl border border-slate-800 flex items-center justify-center p-2 shadow-inner">
                             <img src="${spriteUrl}" alt="${species}" class="w-24 h-24 object-contain scale-125" onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png'">
                         </div>
