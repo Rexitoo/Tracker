@@ -171,7 +171,7 @@
                     <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                         <h3 class="font-bold text-base text-white">📊 Top 5 Pokémon más usados en el torneo</h3>
                     </div>
-                    <!-- Contenedor horizontal ajustado para el Top 5 con visibilidad grande -->
+                    <!-- Contenedor con sprites gigantes y destacados -->
                     <div id="stat-most-used-pokemons" class="grid grid-cols-1 sm:grid-cols-5 gap-3"></div>
                 </div>
             </section>
@@ -710,15 +710,17 @@
                 sortedSpecies.forEach(([species, count], idx) => {
                     const spriteUrl = getPokemonSpriteUrl(species);
                     const card = document.createElement('div');
-                    card.className = "bg-slate-900/80 border border-slate-800/80 p-4 rounded-xl flex flex-col items-center justify-center text-center space-y-2 relative";
+                    // Tarjeta con gran protagonismo visual para el sprite (tamaño enorme)
+                    card.className = "bg-slate-900/90 border border-slate-800/80 p-5 rounded-2xl flex flex-col items-center justify-center text-center space-y-3 relative shadow-md";
                     card.innerHTML = `
-                        <span class="absolute top-2 left-3 text-xs font-black text-slate-500">#${idx + 1}</span>
-                        <div class="w-20 h-20 bg-slate-950 rounded-2xl border border-slate-800 flex items-center justify-center p-2 shadow-inner">
-                            <img src="${spriteUrl}" alt="${species}" class="w-16 h-16 object-contain" onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png'">
+                        <span class="absolute top-2.5 left-3 text-xs font-black text-slate-500">#${idx + 1}</span>
+                        <!-- Sprite Gigante / Enorme -->
+                        <div class="w-28 h-28 bg-slate-950 rounded-2xl border border-slate-800 flex items-center justify-center p-2 shadow-inner">
+                            <img src="${spriteUrl}" alt="${species}" class="w-24 h-24 object-contain scale-125" onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png'">
                         </div>
-                        <div>
-                            <div class="font-bold text-white text-sm capitalize">${species}</div>
-                            <div class="text-[11px] text-slate-400">Registros: <span class="text-red-400 font-semibold">${count}</span></div>
+                        <div class="space-y-0.5">
+                            <div class="font-extrabold text-white text-base capitalize tracking-wide">${species}</div>
+                            <div class="text-xs text-slate-400">Registros: <span class="text-red-400 font-bold">${count}</span></div>
                         </div>
                     `;
                     mostUsedContainer.appendChild(card);
