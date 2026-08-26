@@ -108,7 +108,7 @@
                 <div class="bg-[#121824] border border-slate-800/80 rounded-2xl p-6 shadow-xl space-y-4">
                     <div class="flex items-center justify-between">
                         <h2 class="font-bold text-lg text-white flex items-center gap-2">🏆 Clasificación General</h2>
-                        <span class="text-xs text-slate-400">Ordenado por menos muertes en este tramo</span>
+                        <span class="text-xs text-slate-400">Menos muertes en este tramo</span>
                     </div>
                     <div id="home-ranking-list" class="space-y-2"></div>
                 </div>
@@ -169,9 +169,10 @@
                 </div>
                 <div class="bg-[#121824] border border-slate-800/80 p-6 rounded-2xl space-y-4 shadow-xl">
                     <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-                        <h3 class="font-bold text-base text-white">📊 Pokémon más usados en el torneo</h3>
+                        <h3 class="font-bold text-base text-white">📊 Top 5 Pokémon más usados en el torneo</h3>
                     </div>
-                    <div id="stat-most-used-pokemons" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+                    <!-- Contenedor horizontal ajustado para el Top 5 con visibilidad grande -->
+                    <div id="stat-most-used-pokemons" class="grid grid-cols-1 sm:grid-cols-5 gap-3"></div>
                 </div>
             </section>
 
@@ -601,73 +602,29 @@
             return (tournamentData[trainerName] || []).filter(p => p.status === 'dead').length;
         }
 
-        // --- RANKING MEJORADO ---
         function renderHomeRanking() {
             const list = document.getElementById('home-ranking-list');
-            if (!list) return;
             list.innerHTML = '';
-
-            // Ordenar por menos muertes y desempate por más Pokémon activos
-            const sortedTrainers = [...officialTrainers].sort((a, b) => {
-                const deathsA = countActiveDeaths(a);
-                const deathsB = countActiveDeaths(b);
-                if (deathsA !== deathsB) return deathsA - deathsB;
-                const activesA = (tournamentData[a] || []).filter(p => p.status === 'active').length;
-                const activesB = (tournamentData[b] || []).filter(p => p.status === 'active').length;
-                return activesB - activesA;
-            });
-
-            const container = document.createElement('div');
-            container.className = "grid grid-cols-1 md:grid-cols-2 gap-3";
+            const sortedTrainers = [...officialTrainers].sort((a, b) => countActiveDeaths(a) - countActiveDeaths(b));
 
             sortedTrainers.forEach((t, idx) => {
                 const deads = countActiveDeaths(t);
-                const pkmns = tournamentData[t] || [];
-                const actives = pkmns.filter(p => p.status === 'active').length;
-                const isAdmin = (t === 'Rexitoo');
-
-                let rankBadge = `<span class="font-black text-slate-500 w-6 text-center">#${idx + 1}</span>`;
-                let cardBorder = "border-slate-800/80 bg-slate-900/60 hover:border-slate-700";
-                
-                if (idx === 0) {
-                    rankBadge = `<span class="text-base text-center w-6" title="1º Puesto">🥇</span>`;
-                    cardBorder = "border-amber-500/40 bg-gradient-to-r from-amber-500/10 to-slate-900/60 hover:border-amber-500/70";
-                } else if (idx === 1) {
-                    rankBadge = `<span class="text-base text-center w-6" title="2º Puesto">🥈</span>`;
-                    cardBorder = "border-slate-400/40 bg-gradient-to-r from-slate-400/10 to-slate-900/60 hover:border-slate-400/70";
-                } else if (idx === 2) {
-                    rankBadge = `<span class="text-base text-center w-6" title="3º Puesto">🥉</span>`;
-                    cardBorder = "border-amber-700/40 bg-gradient-to-r from-amber-700/10 to-slate-900/60 hover:border-amber-700/70";
-                }
-
                 const item = document.createElement('div');
-                item.className = `border ${cardBorder} p-4 rounded-xl flex items-center justify-between transition cursor-pointer shadow-sm`;
+                item.className = "bg-slate-900/60 border border-slate-800/60 p-4 rounded-xl flex items-center justify-between hover:border-slate-700 transition cursor-pointer";
                 item.onclick = () => { viewingTrainer = t; switchView('profile'); };
-                
                 item.innerHTML = `
-                    <div class="flex items-center gap-3.5">
-                        ${rankBadge}
-                        <div class="w-9 h-9 rounded-xl bg-red-600/20 border border-red-600/30 flex items-center justify-center font-bold text-red-400 text-xs shadow-inner">
-                            ${isAdmin ? '🛡️' : t.charAt(0).toUpperCase()}
-                        </div>
+                    <div class="flex items-center gap-4">
+                        <span class="font-black text-slate-500 w-6 text-center">${idx + 1}</span>
+                        <div class="w-8 h-8 rounded-lg bg-red-600/20 border border-red-600/30 flex items-center justify-center font-bold text-red-400 text-xs">${t === 'Rexitoo' ? '🛡️' : t.charAt(0)}</div>
                         <div>
-                            <div class="font-bold text-white text-sm flex items-center gap-1.5">
-                                ${t} ${isAdmin ? '<span class="text-[10px] text-amber-400 font-normal">(Admin)</span>' : ''}
-                            </div>
-                            <div class="text-[11px] text-slate-400 flex items-center gap-3 mt-0.5">
-                                <span>🟢 Activos: <strong class="text-emerald-400">${actives}</strong></span>
-                                <span>💀 Muertes: <strong class="text-red-400">${deads}</strong></span>
-                            </div>
+                            <div class="font-bold text-white text-sm">${t}</div>
+                            <div class="text-[11px] text-slate-400">Muertes este tramo: <span class="text-red-400 font-semibold">${deads}</span></div>
                         </div>
                     </div>
-                    <div class="text-xs font-semibold text-slate-300 bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800/80 hover:bg-slate-800 transition">
-                        Ver Ficha ➔
-                    </div>
+                    <div class="text-xs font-mono font-bold text-slate-400 bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800">Ver Ficha</div>
                 `;
-                container.appendChild(item);
+                list.appendChild(item);
             });
-
-            list.appendChild(container);
         }
 
         function renderParticipantsGrid() {
@@ -745,7 +702,7 @@
 
             const mostUsedContainer = document.getElementById('stat-most-used-pokemons');
             mostUsedContainer.innerHTML = '';
-            const sortedSpecies = Object.entries(speciesCount).sort((a, b) => b[1] - a[1]).slice(0, 6);
+            const sortedSpecies = Object.entries(speciesCount).sort((a, b) => b[1] - a[1]).slice(0, 5);
 
             if (sortedSpecies.length === 0) {
                 mostUsedContainer.innerHTML = `<div class="text-xs text-slate-500 italic col-span-full text-center py-4">Sin registros aún.</div>`;
@@ -753,17 +710,15 @@
                 sortedSpecies.forEach(([species, count], idx) => {
                     const spriteUrl = getPokemonSpriteUrl(species);
                     const card = document.createElement('div');
-                    card.className = "bg-slate-900/60 border border-slate-800/80 p-3 rounded-xl flex items-center justify-between";
+                    card.className = "bg-slate-900/80 border border-slate-800/80 p-4 rounded-xl flex flex-col items-center justify-center text-center space-y-2 relative";
                     card.innerHTML = `
-                        <div class="flex items-center gap-3">
-                            <span class="text-xs font-black text-slate-500 w-4">#${idx + 1}</span>
-                            <div class="w-10 h-10 bg-slate-950 rounded-lg border border-slate-800 flex items-center justify-center p-1">
-                                <img src="${spriteUrl}" alt="${species}" class="w-8 h-8 object-contain" onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png'">
-                            </div>
-                            <div>
-                                <div class="font-bold text-white text-sm">${species}</div>
-                                <div class="text-[11px] text-slate-400">Registros: <span class="text-red-400 font-semibold">${count}</span></div>
-                            </div>
+                        <span class="absolute top-2 left-3 text-xs font-black text-slate-500">#${idx + 1}</span>
+                        <div class="w-20 h-20 bg-slate-950 rounded-2xl border border-slate-800 flex items-center justify-center p-2 shadow-inner">
+                            <img src="${spriteUrl}" alt="${species}" class="w-16 h-16 object-contain" onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png'">
+                        </div>
+                        <div>
+                            <div class="font-bold text-white text-sm capitalize">${species}</div>
+                            <div class="text-[11px] text-slate-400">Registros: <span class="text-red-400 font-semibold">${count}</span></div>
                         </div>
                     `;
                     mostUsedContainer.appendChild(card);
