@@ -1040,7 +1040,7 @@
 
         function closePokemonModal() { document.getElementById('pokemonModal').classList.add('hidden'); document.getElementById('pokemonForm').reset(); }
 
-        // Actualizado para asignar la bandera permanente 'diedInThisTramo' cuando el estado cambia a 'dead'
+        // LÓGICA CORREGIDA: Controla correctamente si resucitan al Pokémon y vuelve a morir
         function savePokemon(e) {
             e.preventDefault();
             if (!currentUser) return;
@@ -1057,8 +1057,15 @@
             const existingPokemon = tournamentData[currentUser].find(item => item.id == editId);
             let diedInThisTramo = existingPokemon ? (existingPokemon.diedInThisTramo || false) : false;
 
-            if (status === 'dead' && !diedInThisTramo) {
-                diedInThisTramo = true;
+            if (status === 'dead') {
+                // Solo cuenta como nueva muerte si antes NO estaba muerto en este tramo
+                if (!existingPokemon || existingPokemon.status !== 'dead') {
+                    diedInThisTramo = true;
+                }
+            } else if (status === 'active' || status === 'pc') {
+                // Si el usuario lo saca del cementerio y lo pone vivo de nuevo, 
+                // permitimos resetear la bandera para que cuente de nuevo si vuelve a morir.
+                diedInThisTramo = false;
             }
 
             if (editId) {
@@ -1081,7 +1088,7 @@
                     nature, 
                     ability, 
                     status, 
-                    diedInThisTramo 
+                    diedInThisTramo: (status === 'dead') 
                 });
             }
 
