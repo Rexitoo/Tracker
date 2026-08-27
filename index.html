@@ -119,7 +119,7 @@
                 <div class="bg-[#121824] border border-slate-800/80 px-6 py-4 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
                         <h2 class="font-bold text-lg text-white">Roster completo del torneo</h2>
-                        <p class="text-xs text-slate-400">Haz clic en cualquier participante para ver sus fichas y pincha en sus Pokémon para abrir su tarjeta detallada (con estadísticas y tipos personalizados del Desafío Lunar).</p>
+                        <p class="text-xs text-slate-400">Haz clic en cualquier participante para ver sus fichas y pincha en sus Pokémon para abrir su tarjeta detallada.</p>
                     </div>
                     <div class="w-full sm:w-auto">
                         <input type="text" id="pokemon-search-input" oninput="renderParticipantsGrid()" placeholder="🔍 Buscar Pokémon o Entrenador..." class="w-full sm:w-64 bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-slate-700">
@@ -171,7 +171,6 @@
                     <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                         <h3 class="font-bold text-base text-white">📊 Top 5 Pokémon más usados en el torneo</h3>
                     </div>
-                    <!-- Contenedor con sprites gigantes y destacados -->
                     <div id="stat-most-used-pokemons" class="grid grid-cols-1 sm:grid-cols-5 gap-3"></div>
                 </div>
             </section>
@@ -598,8 +597,9 @@
             updateAuthHeader(); switchView('participants');
         }
 
+        // Modificado para contar muertes de forma permanente sin descontar al revivir
         function countActiveDeaths(trainerName) {
-            return (tournamentData[trainerName] || []).filter(p => p.status === 'dead').length;
+            return (tournamentData[trainerName] || []).filter(p => p.hasDied || p.status === 'dead').length;
         }
 
         function renderHomeRanking() {
@@ -1035,6 +1035,7 @@
 
         function closePokemonModal() { document.getElementById('pokemonModal').classList.add('hidden'); document.getElementById('pokemonForm').reset(); }
 
+        // Modificado para fijar permanentemente la muerte (hasDied: true) al guardar o cambiar a dead
         function savePokemon(e) {
             e.preventDefault();
             if (!currentUser) return;
@@ -1049,9 +1050,16 @@
             if (!tournamentData[currentUser]) tournamentData[currentUser] = [];
 
             if (editId) {
-                tournamentData[currentUser] = tournamentData[currentUser].map(p => p.id == editId ? { ...p, species, nickname, route, nature, ability, status } : p);
+                tournamentData[currentUser] = tournamentData[currentUser].map(p => {
+                    if (p.id == editId) {
+                        const hasDied = (status === 'dead' || p.hasDied);
+                        return { ...p, species, nickname, route, nature, ability, status, hasDied };
+                    }
+                    return p;
+                });
             } else {
-                tournamentData[currentUser].push({ id: Date.now(), species, nickname, route, nature, ability, status });
+                const hasDied = (status === 'dead');
+                tournamentData[currentUser].push({ id: Date.now(), species, nickname, route, nature, ability, status, hasDied });
             }
 
             saveDataToStorage();
