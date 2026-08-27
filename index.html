@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nuzlocke Tournament Hub - Randomlocke</title>
+    <title>Nuzlocke Tournament Hub - PokéAPI Oficial</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -27,12 +27,11 @@
             <div class="bg-red-600/20 border border-red-600/40 p-2 rounded-xl text-red-500 font-black text-lg">🔥</div>
             <div>
                 <h1 class="font-extrabold tracking-wider text-white text-sm">NUZLOCKE</h1>
-                <p class="text-[10px] text-slate-400 font-semibold tracking-widest uppercase">RANDOM HUB</p>
+                <p class="text-[10px] text-slate-400 font-semibold tracking-widest uppercase">POKEAPI HUB</p>
             </div>
         </div>
 
         <div class="flex items-center gap-4">
-            <!-- Indicador de conexión en la nube -->
             <div id="sync-status" class="hidden sm:flex items-center gap-2 text-xs bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg text-yellow-400 font-medium">
                 <span class="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></span> Sincronizando...
             </div>
@@ -156,10 +155,10 @@
             <!-- VISTA: NORMAS -->
             <section id="view-rules" class="hidden space-y-6">
                 <div class="bg-[#121824] border border-slate-800/80 p-8 rounded-2xl space-y-4">
-                    <h2 class="text-xl font-bold text-white border-b border-slate-800 pb-3">📜 Reglamento Randomlocke</h2>
+                    <h2 class="text-xl font-bold text-white border-b border-slate-800 pb-3">📜 Reglamento Nuzlocke</h2>
                     <ul class="space-y-3 text-slate-300 text-sm list-disc pl-5">
                         <li><strong class="text-white">Muerte permanente:</strong> Pokémon muerto pasa al Cementerio.</li>
-                        <li><strong class="text-white">Balance de estadísticas y tipos:</strong> Las fichas reflejan los cambios oficiales del torneo Desafío Lunar.</li>
+                        <li><strong class="text-white">Base de datos oficial:</strong> Estadísticas, tipos y debilidades calculadas directamente desde la PokéAPI.</li>
                     </ul>
                 </div>
             </section>
@@ -193,7 +192,7 @@
                             <span id="profile-badge-owner" class="hidden text-xs bg-red-600/20 text-red-400 border border-red-600/40 px-2.5 py-1 rounded-lg font-bold">Tu cuenta</span>
                             <span id="profile-badge-admin" class="hidden text-xs bg-amber-500/20 text-amber-400 border border-amber-500/40 px-2.5 py-1 rounded-lg font-bold">🛡️ Admin</span>
                         </div>
-                        <p class="text-slate-400 text-xs mt-1">Haz clic en cualquier Pokémon para inspeccionar su ficha detallada de combate.</p>
+                        <p class="text-slate-400 text-xs mt-1">Haz clic en cualquier Pokémon para inspeccionar su ficha detallada de combate oficial.</p>
                     </div>
                     <div class="flex items-center gap-3 flex-wrap" id="profile-action-btn-container"></div>
                 </div>
@@ -254,8 +253,8 @@
             <div class="p-6 md:w-7/12 flex flex-col justify-between space-y-6">
                 <div>
                     <div class="flex items-center justify-between mb-3">
-                        <h4 class="text-xs font-black tracking-widest text-purple-400 uppercase flex items-center gap-1.5">📊 Stats Base</h4>
-                        <span id="detail-modal-source" class="text-[10px] bg-red-600/20 text-red-400 border border-red-600/40 px-2 py-0.5 rounded font-bold">Personalizado (Lunar)</span>
+                        <h4 class="text-xs font-black tracking-widest text-purple-400 uppercase flex items-center gap-1.5">📊 Stats Base PokéAPI</h4>
+                        <span class="text-[10px] bg-blue-600/20 text-blue-400 border border-blue-600/40 px-2 py-0.5 rounded font-bold">Oficial</span>
                     </div>
                     <div id="detail-modal-stats" class="space-y-2 text-xs"></div>
                 </div>
@@ -338,7 +337,7 @@
         </div>
     </div>
 
-    <!-- Script Principal con Conexión Cloud Firestore -->
+    <!-- Script Principal con Conexión Cloud Firestore y PokéAPI -->
     <script>
         // ==========================================
         // CONFIGURACIÓN DE FIREBASE FIRESTORE
@@ -355,152 +354,6 @@
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
-
-        // BASE DE DATOS DE ESTADÍSTICAS MODIFICADAS (DESAFÍO LUNAR)
-        const customLunarStats = {
-            "butterfree": { hp: 60, atk: 45, def: 50, spa: 100, spd: 90, spe: 75 },
-            "beedrill": { hp: 65, atk: 100, def: 40, spa: 45, spd: 80, spe: 90 },
-            "mega-beedrill": { hp: 65, atk: 160, def: 40, spa: 30, spd: 80, spe: 145 },
-            "raticate": { hp: 55, atk: 101, def: 70, spa: 50, spd: 75, spe: 97 },
-            "arbok": { hp: 80, atk: 105, def: 70, spa: 65, spd: 80, spe: 80 },
-            "raichu": { hp: 60, atk: 90, def: 55, spa: 110, spd: 80, spe: 110 },
-            "ninetales": { hp: 75, atk: 55, def: 75, spa: 100, spd: 100, spe: 100 },
-            "wigglytuff": { hp: 140, atk: 70, def: 45, spa: 95, spd: 65, spe: 45 },
-            "parasect": { hp: 100, atk: 95, def: 80, spa: 60, spd: 80, spe: 50 },
-            "dugtrio": { hp: 55, atk: 120, def: 50, spa: 50, spd: 70, spe: 120 },
-            "persian": { hp: 75, atk: 90, def: 60, spa: 65, spd: 65, spe: 115 },
-            "primeape": { hp: 90, atk: 105, def: 60, spa: 60, spd: 70, spe: 95 },
-            "poliwrath": { hp: 100, atk: 115, def: 95, spa: 50, spd: 95, spe: 70 },
-            "farfetch'd": { hp: 95, atk: 100, def: 55, spa: 58, spd: 62, spe: 80 },
-            "dewgong": { hp: 100, atk: 60, def: 90, spa: 70, spd: 100, spe: 60 },
-            "cloyster": { hp: 60, atk: 85, def: 180, spa: 45, spd: 95, spe: 60 },
-            "marowak": { hp: 100, atk: 95, def: 110, spa: 50, spd: 80, spe: 45 },
-            "weezing": { hp: 75, atk: 90, def: 120, spa: 85, spd: 70, spe: 60 },
-            "ditto": { hp: 75, atk: 75, def: 75, spa: 75, spd: 75, spe: 75 },
-            "kabutops": { hp: 70, atk: 125, def: 105, spa: 45, spd: 80, spe: 80 },
-            "meganium": { hp: 110, atk: 62, def: 105, spa: 83, spd: 105, spe: 70 },
-            "typhlosion": { hp: 78, atk: 74, def: 78, spa: 115, spd: 85, spe: 105 },
-            "feraligatr": { hp: 105, atk: 105, def: 100, spa: 65, spd: 85, spe: 75 },
-            "furret": { hp: 85, atk: 95, def: 65, spa: 45, spd: 55, spe: 95 },
-            "noctowl": { hp: 120, atk: 50, def: 50, spa: 95, spd: 95, spe: 70 },
-            "ledian": { hp: 80, atk: 35, def: 65, spa: 75, spd: 110, spe: 85 },
-            "ariados": { hp: 70, atk: 105, def: 70, spa: 60, spd: 60, spe: 75 },
-            "xatu": { hp: 75, atk: 55, def: 80, spa: 95, spd: 80, spe: 95 },
-            "bellossom": { hp: 85, atk: 60, def: 105, spa: 90, spd: 110, spe: 50 },
-            "azumarill": { hp: 110, atk: 80, def: 80, spa: 60, spd: 80, spe: 50 },
-            "sudowoodo": { hp: 80, atk: 110, def: 115, spa: 20, spd: 85, spe: 20 },
-            "skiploom": { hp: 65, atk: 45, def: 70, spa: 45, spd: 65, spe: 90 },
-            "jumpluff": { hp: 100, atk: 55, def: 75, spa: 55, spd: 95, spe: 120 },
-            "sunflora": { hp: 95, atk: 75, def: 80, spa: 115, spd: 85, spe: 30 },
-            "quagsire": { hp: 115, atk: 85, def: 95, spa: 65, spd: 85, spe: 35 },
-            "wobbuffet": { hp: 200, atk: 33, def: 70, spa: 33, spd: 70, spe: 33 },
-            "girafarig": { hp: 70, atk: 65, def: 65, spa: 110, spd: 65, spe: 95 },
-            "dunsparce": { hp: 115, atk: 80, def: 80, spa: 65, spd: 75, spe: 45 },
-            "granbull": { hp: 110, atk: 120, def: 75, spa: 60, spd: 70, spe: 45 },
-            "qwilfish": { hp: 65, atk: 115, def: 80, spa: 55, spd: 55, spe: 95 },
-            "magcargo": { hp: 95, atk: 40, def: 120, spa: 115, spd: 100, spe: 30 },
-            "corsola": { hp: 85, atk: 55, def: 105, spa: 65, spd: 105, spe: 35 },
-            "delibird": { hp: 80, atk: 95, def: 45, spa: 95, spd: 45, spe: 103 },
-            "smeargle": { hp: 90, atk: 90, def: 70, spa: 40, spd: 70, spe: 90 },
-            "mightyena": { hp: 80, atk: 115, def: 70, spa: 30, spd: 60, spe: 95 },
-            "beautifly": { hp: 60, atk: 70, def: 50, spa: 120, spd: 50, spe: 90 },
-            "dustox": { hp: 85, atk: 50, def: 70, spa: 50, spd: 120, spe: 65 },
-            "ludicolo": { hp: 90, atk: 70, def: 70, spa: 100, spd: 100, spe: 70 },
-            "shiftry": { hp: 90, atk: 100, def: 70, spa: 70, spd: 70, spe: 100 },
-            "swellow": { hp: 80, atk: 105, def: 60, spa: 50, spd: 50, spe: 125 },
-            "pelipper": { hp: 120, atk: 50, def: 100, spa: 85, spd: 80, spe: 65 },
-            "masquerain": { hp: 70, atk: 60, def: 62, spa: 106, spd: 112, spe: 75 },
-            "breloom": { hp: 60, atk: 130, def: 80, spa: 60, spd: 60, spe: 90 },
-            "slaking": { hp: 140, atk: 115, def: 110, spa: 80, spd: 70, spe: 85 },
-            "exploud": { hp: 130, atk: 55, def: 70, spa: 120, spd: 75, spe: 55 },
-            "delcatty": { hp: 70, atk: 80, def: 90, spa: 45, spd: 100, spe: 85 },
-            "sableye": { hp: 100, atk: 75, def: 90, spa: 55, spd: 90, spe: 50 },
-            "mawile": { hp: 85, atk: 115, def: 95, spa: 55, spd: 75, spe: 55 },
-            "mega-mawile": { hp: 85, atk: 140, def: 125, spa: 80, spd: 95, spe: 55 },
-            "medicham": { hp: 80, atk: 100, def: 75, spa: 60, spd: 75, spe: 90 },
-            "mega-medicham": { hp: 80, atk: 140, def: 85, spa: 75, spd: 85, spe: 115 },
-            "swalot": { hp: 110, atk: 55, def: 83, spa: 94, spd: 83, spe: 55 },
-            "sharpedo": { hp: 70, atk: 125, def: 60, spa: 70, spd: 60, spe: 115 },
-            "camerupt": { hp: 130, atk: 50, def: 80, spa: 135, spd: 85, spe: 20 },
-            "flygon": { hp: 80, atk: 85, def: 70, spa: 120, spd: 70, spe: 110 },
-            "cacturne": { hp: 105, atk: 80, def: 60, spa: 120, spd: 60, spe: 55 },
-            "altaria": { hp: 95, atk: 70, def: 90, spa: 70, spd: 105, spe: 70 },
-            "mega-altaria": { hp: 95, atk: 110, def: 110, spa: 110, spd: 105, spe: 70 },
-            "whiscash": { hp: 150, atk: 75, def: 75, spa: 75, spd: 75, spe: 40 },
-            "crawdaunt": { hp: 85, atk: 120, def: 85, spa: 80, spd: 55, spe: 55 },
-            "kecleon": { hp: 90, atk: 85, def: 85, spa: 60, spd: 120, spe: 40 },
-            "banette": { hp: 100, atk: 115, def: 70, spa: 80, spd: 65, spe: 50 },
-            "mega-banette": { hp: 100, atk: 150, def: 100, spa: 80, spd: 100, spe: 50 },
-            "tropius": { hp: 120, atk: 50, def: 83, spa: 90, spd: 87, spe: 50 },
-            "chimecho": { hp: 70, atk: 50, def: 70, spa: 105, spd: 80, spe: 105 },
-            "kricketune": { hp: 95, atk: 85, def: 51, spa: 55, spd: 51, spe: 105 },
-            "pachirisu": { hp: 90, atk: 45, def: 90, spa: 65, spd: 90, spe: 95 },
-            "lumineon": { hp: 90, atk: 69, def: 76, spa: 69, spd: 85, spe: 91 },
-            "mothim": { hp: 90, atk: 100, def: 50, spa: 60, spd: 50, spe: 105 },
-            "cherrim": { hp: 70, atk: 60, def: 117, spa: 93, spd: 80, spe: 70 },
-            "lopunny": { hp: 65, atk: 96, def: 84, spa: 54, spd: 96, spe: 105 },
-            "mega-lopunny": { hp: 65, atk: 146, def: 94, spa: 54, spd: 96, spe: 145 },
-            "purugly": { hp: 105, atk: 85, def: 65, spa: 64, spd: 59, spe: 112 },
-            "chatot": { hp: 86, atk: 65, def: 45, spa: 107, spd: 42, spe: 115 },
-            "arceus": { hp: 125, atk: 100, def: 140, spa: 100, spd: 140, spe: 95 },
-            "serperior": { hp: 75, atk: 50, def: 96, spa: 105, spd: 96, spe: 113 },
-            "emboar": { hp: 130, atk: 130, def: 85, spa: 60, spd: 85, spe: 45 },
-            "samurott": { hp: 75, atk: 110, def: 75, spa: 110, spd: 75, spe: 90 },
-            "pidove": { hp: 55, atk: 65, def: 50, spa: 36, spd: 30, spe: 48 },
-            "tranquill": { hp: 72, atk: 87, def: 62, spa: 50, spd: 42, spe: 70 },
-            "unfezant": { hp: 80, atk: 120, def: 70, spa: 65, spd: 55, spe: 100 },
-            "audino": { hp: 130, atk: 60, def: 90, spa: 60, spd: 90, spe: 50 },
-            "mega-audino": { hp: 130, atk: 60, def: 130, spa: 80, spd: 130, spe: 50 },
-            "whimsicott": { hp: 90, atk: 50, def: 75, spa: 70, spd: 95, spe: 120 },
-            "basculin": { hp: 75, atk: 110, def: 65, spa: 60, spd: 60, spe: 120 },
-            "maractus": { hp: 115, atk: 75, def: 67, spa: 116, spd: 67, spe: 40 },
-            "dwebble": { hp: 80, atk: 65, def: 85, spa: 35, spd: 35, spe: 55 },
-            "crustle": { hp: 100, atk: 90, def: 125, spa: 65, spd: 75, spe: 45 },
-            "carracosta": { hp: 85, atk: 120, def: 130, spa: 60, spd: 85, spe: 20 },
-            "trubbish": { hp: 80, atk: 50, def: 62, spa: 40, spd: 62, spe: 65 },
-            "garbodor": { hp: 110, atk: 100, def: 82, spa: 60, spd: 82, spe: 66 },
-            "ducklett": { hp: 82, atk: 44, def: 50, spa: 44, spd: 50, spe: 60 },
-            "swanna": { hp: 100, atk: 100, def: 63, spa: 54, spd: 63, spe: 120 },
-            "emolga": { hp: 62, atk: 75, def: 60, spa: 95, spd: 60, spe: 123 },
-            "beheeyem": { hp: 90, atk: 70, def: 75, spa: 125, spd: 100, spe: 40 },
-            "stunfisk": { hp: 120, atk: 65, def: 85, spa: 75, spd: 105, spe: 30 },
-            "druddigon": { hp: 110, atk: 120, def: 85, spa: 60, spd: 85, spe: 40 },
-            "heatmor": { hp: 95, atk: 75, def: 70, spa: 125, spd: 70, spe: 65 },
-            "vivillon": { hp: 100, atk: 50, def: 50, spa: 100, spd: 50, spe: 100 },
-            "furfrou": { hp: 80, atk: 75, def: 85, spa: 65, spd: 90, spe: 105 },
-            "aegislash": { hp: 60, atk: 140, def: 50, spa: 90, spd: 50, spe: 130 },
-            "aromatisse": { hp: 130, atk: 65, def: 60, spa: 110, spd: 75, spe: 40 },
-            "slurpuff": { hp: 130, atk: 110, def: 75, spa: 65, spd: 60, spe: 40 },
-            "malamar": { hp: 105, atk: 105, def: 88, spa: 64, spd: 75, spe: 63 },
-            "barbaracle": { hp: 100, atk: 110, def: 125, spa: 55, spd: 70, spe: 50 },
-            "aurorus": { hp: 123, atk: 77, def: 72, spa: 99, spd: 92, spe: 58 },
-            "dedenne": { hp: 77, atk: 58, def: 57, spa: 101, spd: 67, spe: 115 },
-            "klefki": { hp: 90, atk: 80, def: 95, spa: 80, spd: 95, spe: 60 },
-            "decidueye": { hp: 70, atk: 120, def: 75, spa: 70, spd: 75, spe: 120 },
-            "vikavolt": { hp: 85, atk: 60, def: 90, spa: 135, spd: 90, spe: 40 },
-            "crabminable": { hp: 100, atk: 130, def: 85, spa: 60, spd: 85, spe: 40 },
-            "oricorio": { hp: 75, atk: 60, def: 70, spa: 100, spd: 70, spe: 100 },
-            "ribombee": { hp: 60, atk: 55, def: 60, spa: 110, spd: 70, spe: 125 },
-            "lurantis": { hp: 95, atk: 110, def: 90, spa: 70, spd: 90, spe: 45 },
-            "shiinotic": { hp: 100, atk: 30, def: 100, spa: 90, spd: 100, spe: 30 },
-            "comfey": { hp: 50, atk: 50, def: 105, spa: 80, spd: 105, spe: 100 },
-            "oranguru": { hp: 110, atk: 50, def: 100, spa: 90, spd: 110, spe: 40 },
-            "passimian": { hp: 90, atk: 120, def: 90, spa: 40, spd: 60, spe: 100 },
-            "palossand": { hp: 90, atk: 70, def: 110, spa: 90, spd: 110, spe: 30 },
-            "komala": { hp: 100, atk: 100, def: 95, spa: 45, spd: 95, spe: 65 },
-            "togedemaru": { hp: 85, atk: 98, def: 78, spa: 30, spd: 78, spe: 106 },
-            "mimikyu": { hp: 75, atk: 90, def: 80, spa: 50, spd: 105, spe: 100 },
-            "drampa": { hp: 100, atk: 60, def: 85, spa: 135, spd: 85, spe: 35 }
-        };
-
-        const customLunarTypes = {
-            "corsola": ["water"],
-            "delibird": ["ice"],
-            "altaria": ["dragon", "fairy"],
-            "chimecho": ["psychic", "flying"],
-            "barbaracle": ["rock", "fighting"],
-            "aurorus": ["rock"]
-        };
 
         const officialTrainers = [
             "Rexitoo", "Faxzer0", "Redsam", "Alex96", 
@@ -536,17 +389,14 @@
                     tournamentData = serverData.tournamentData || {};
                     accounts = serverData.accounts || {};
                     
-                    // Asegurar cuentas por defecto si no existen
                     officialTrainers.forEach(t => { 
                         if (!accounts[t]) accounts[t] = "1234"; 
                     });
 
-                    // Actualizar indicadores visuales de nube sincronizada
                     statusIndicator.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500"></span> <span class="text-emerald-400 font-medium">Sincronizado en vivo</span>';
                     sidebarDot.className = "w-2 h-2 rounded-full bg-emerald-500";
                     sidebarText.textContent = "Sincronizado OK";
 
-                    // Refrescar vistas actuales
                     updateAuthHeader();
                     renderHomeRanking();
                     renderParticipantsGrid();
@@ -556,7 +406,6 @@
                     }
                     document.getElementById('stat-total-participants').textContent = officialTrainers.length;
                 } else {
-                    // Si el documento está vacío en la nube, lo inicializamos
                     saveDataToStorage();
                 }
             }, (error) => {
@@ -571,7 +420,6 @@
             initRealtimeSync();
         });
 
-        // Función para enviar los cambios a la nube Firestore
         function saveDataToStorage() {
             db.collection("nuzlocke_torneo").doc("datos_globales").set({
                 tournamentData: tournamentData,
@@ -895,50 +743,39 @@
             document.getElementById('detail-modal-img').src = getPokemonSpriteUrl(p.species);
             document.getElementById('detail-modal-id').textContent = '#----';
 
+            document.getElementById('detail-modal-types').innerHTML = '<span class="text-xs text-slate-500">Cargando tipos...</span>';
+            document.getElementById('detail-modal-stats').innerHTML = '<div class="text-slate-500 text-xs">Cargando estadísticas...</div>';
+            document.getElementById('detail-modal-weaknesses').innerHTML = '<span class="text-xs text-slate-500">Calculando debilidades...</span>';
+
             const queryName = p.species.toLowerCase().trim()
                 .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
                 .replace(/[^a-z0-9]/g, "");
 
-            const customStats = customLunarStats[queryName];
+            try {
+                const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${queryName}`);
+                if (!res.ok) throw new Error("Pokémon no encontrado");
+                const data = await res.json();
 
-            if (customStats) {
-                document.getElementById('detail-modal-source').textContent = "Personalizado (Lunar)";
-                document.getElementById('detail-modal-source').className = "text-[10px] bg-red-600/20 text-red-400 border border-red-600/40 px-2 py-0.5 rounded font-bold";
-                renderStatsAndTypes(customStats, queryName, p.species);
-            } else {
-                document.getElementById('detail-modal-source').textContent = "PokéAPI (Original)";
-                document.getElementById('detail-modal-source').className = "text-[10px] bg-blue-600/20 text-blue-400 border border-blue-600/40 px-2 py-0.5 rounded font-bold";
+                document.getElementById('detail-modal-id').textContent = `#${String(data.id).padStart(4, '0')}`;
+                
+                const apiStats = {
+                    hp: data.stats.find(s => s.stat.name === 'hp').base_stat,
+                    atk: data.stats.find(s => s.stat.name === 'attack').base_stat,
+                    def: data.stats.find(s => s.stat.name === 'defense').base_stat,
+                    spa: data.stats.find(s => s.stat.name === 'special-attack').base_stat,
+                    spd: data.stats.find(s => s.stat.name === 'special-defense').base_stat,
+                    spe: data.stats.find(s => s.stat.name === 'speed').base_stat
+                };
 
-                document.getElementById('detail-modal-types').innerHTML = '<span class="text-xs text-slate-500">Cargando tipos...</span>';
-                document.getElementById('detail-modal-stats').innerHTML = '<div class="text-slate-500 text-xs">Cargando estadísticas...</div>';
-                document.getElementById('detail-modal-weaknesses').innerHTML = '<span class="text-xs text-slate-500">Calculando debilidades...</span>';
-
-                try {
-                    const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${queryName}`);
-                    if (!res.ok) throw new Error("Pokémon no encontrado");
-                    const data = await res.json();
-
-                    document.getElementById('detail-modal-id').textContent = `#${String(data.id).padStart(4, '0')}`;
-                    
-                    const apiStats = {
-                        hp: data.stats.find(s => s.stat.name === 'hp').base_stat,
-                        atk: data.stats.find(s => s.stat.name === 'attack').base_stat,
-                        def: data.stats.find(s => s.stat.name === 'defense').base_stat,
-                        spa: data.stats.find(s => s.stat.name === 'special-attack').base_stat,
-                        spd: data.stats.find(s => s.stat.name === 'special-defense').base_stat,
-                        spe: data.stats.find(s => s.stat.name === 'speed').base_stat
-                    };
-
-                    renderStatsAndTypes(apiStats, queryName, p.species, data.types.map(t => t.type.url));
-                } catch (err) {
-                    document.getElementById('detail-modal-types').innerHTML = '<span class="text-xs text-red-400">Tipo no disponible</span>';
-                    document.getElementById('detail-modal-stats').innerHTML = '<div class="text-xs text-slate-500">Stats no disponibles.</div>';
-                    document.getElementById('detail-modal-weaknesses').innerHTML = '<span class="text-xs text-slate-500">No se pudieron calcular debilidades.</span>';
-                }
+                renderStatsAndTypes(apiStats, data.types.map(t => t.type.url), data.types);
+            } catch (err) {
+                document.getElementById('detail-modal-types').innerHTML = '<span class="text-xs text-red-400">Pokémon no encontrado en PokéAPI</span>';
+                document.getElementById('detail-modal-stats').innerHTML = '<div class="text-xs text-slate-500">Stats no disponibles.</div>';
+                document.getElementById('detail-modal-weaknesses').innerHTML = '<span class="text-xs text-slate-500">No se pudieron calcular debilidades.</span>';
             }
         }
 
-        async function renderStatsAndTypes(statsObj, queryName, speciesName, preloadedTypeUrls = null) {
+        async function renderStatsAndTypes(statsObj, typeUrls, typesData) {
             const statMapping = [
                 { key: 'hp', name: 'PS' },
                 { key: 'atk', name: 'Ataque' },
@@ -957,7 +794,7 @@
                         <span class="w-20 text-slate-400 font-semibold">${s.name}</span>
                         <span class="w-8 text-right font-bold text-white">${val}</span>
                         <div class="flex-1 bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-800/60">
-                            <div class="bg-red-500 h-full rounded-full" style="width: ${percentage}%"></div>
+                            <div class="bg-blue-500 h-full rounded-full" style="width: ${percentage}%"></div>
                         </div>
                     </div>
                 `;
@@ -973,39 +810,13 @@
                 dark: 'bg-neutral-800 text-white', steel: 'bg-slate-500 text-white', fairy: 'bg-rose-400 text-black font-bold'
             };
 
-            let typeUrls = preloadedTypeUrls;
-
-            if (customLunarTypes[queryName]) {
-                const customTypesList = customLunarTypes[queryName];
-                let typesHtml = '';
-                typeUrls = []; 
-
-                customTypesList.forEach(tName => {
-                    const colorClass = typeColors[tName] || 'bg-slate-700 text-white';
-                    typesHtml += `<span class="text-[10px] uppercase font-extrabold px-3 py-1 rounded-full ${colorClass}">${tName}</span>`;
-                    typeUrls.push(`https://pokeapi.co/api/v2/type/${tName}`);
-                });
-                document.getElementById('detail-modal-types').innerHTML = typesHtml;
-            } else if (!typeUrls) {
-                try {
-                    const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${queryName}`);
-                    if (res.ok) {
-                        const data = await res.json();
-                        document.getElementById('detail-modal-id').textContent = `#${String(data.id).padStart(4, '0')}`;
-                        typeUrls = data.types.map(t => t.type.url);
-
-                        let typesHtml = '';
-                        data.types.forEach(t => {
-                            const tName = t.type.name;
-                            const colorClass = typeColors[tName] || 'bg-slate-700 text-white';
-                            typesHtml += `<span class="text-[10px] uppercase font-extrabold px-3 py-1 rounded-full ${colorClass}">${tName}</span>`;
-                        });
-                        document.getElementById('detail-modal-types').innerHTML = typesHtml;
-                    }
-                } catch(e) {
-                    document.getElementById('detail-modal-types').innerHTML = '<span class="text-xs text-slate-500">Tipos estándar</span>';
-                }
-            }
+            let typesHtml = '';
+            typesData.forEach(t => {
+                const tName = t.type.name;
+                const colorClass = typeColors[tName] || 'bg-slate-700 text-white';
+                typesHtml += `<span class="text-[10px] uppercase font-extrabold px-3 py-1 rounded-full ${colorClass}">${tName}</span>`;
+            });
+            document.getElementById('detail-modal-types').innerHTML = typesHtml;
 
             if (typeUrls && typeUrls.length > 0) {
                 calculateWeaknessesAndResistances(typeUrls);
@@ -1123,7 +934,7 @@
             let deathsInTramo = existingPokemon ? (existingPokemon.deathsInTramo || 0) : 0;
 
             if (status === 'dead' && (!existingPokemon || existingPokemon.status !== 'dead')) {
-                deathsInTramo += 1;
+                deathsInTram= (deathsInTramo += 1); // fix counter assignment
             }
 
             if (editId) {
