@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nuzlocke Tournament Hub - Randomlocke</title>
+    <title>Nuzlocke Tournament Hub - PokéAPI Oficial</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -27,12 +27,11 @@
             <div class="bg-red-600/20 border border-red-600/40 p-2 rounded-xl text-red-500 font-black text-lg">🔥</div>
             <div>
                 <h1 class="font-extrabold tracking-wider text-white text-sm">NUZLOCKE</h1>
-                <p class="text-[10px] text-slate-400 font-semibold tracking-widest uppercase">RANDOM HUB</p>
+                <p class="text-[10px] text-slate-400 font-semibold tracking-widest uppercase">POKEAPI HUB</p>
             </div>
         </div>
 
         <div class="flex items-center gap-4">
-            <!-- Indicador de conexión en la nube -->
             <div id="sync-status" class="hidden sm:flex items-center gap-2 text-xs bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg text-yellow-400 font-medium">
                 <span class="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></span> Sincronizando...
             </div>
@@ -156,10 +155,10 @@
             <!-- VISTA: NORMAS -->
             <section id="view-rules" class="hidden space-y-6">
                 <div class="bg-[#121824] border border-slate-800/80 p-8 rounded-2xl space-y-4">
-                    <h2 class="text-xl font-bold text-white border-b border-slate-800 pb-3">📜 Reglamento Randomlocke</h2>
+                    <h2 class="text-xl font-bold text-white border-b border-slate-800 pb-3">📜 Reglamento Nuzlocke</h2>
                     <ul class="space-y-3 text-slate-300 text-sm list-disc pl-5">
                         <li><strong class="text-white">Muerte permanente:</strong> Pokémon muerto pasa al Cementerio.</li>
-                        <li><strong class="text-white">Balance de estadísticas y tipos:</strong> Las fichas reflejan los cambios oficiales del torneo Desafío Lunar.</li>
+                        <li><strong class="text-white">Base de datos oficial:</strong> Estadísticas, tipos y debilidades calculadas directamente desde la PokéAPI.</li>
                     </ul>
                 </div>
             </section>
@@ -193,7 +192,7 @@
                             <span id="profile-badge-owner" class="hidden text-xs bg-red-600/20 text-red-400 border border-red-600/40 px-2.5 py-1 rounded-lg font-bold">Tu cuenta</span>
                             <span id="profile-badge-admin" class="hidden text-xs bg-amber-500/20 text-amber-400 border border-amber-500/40 px-2.5 py-1 rounded-lg font-bold">🛡️ Admin</span>
                         </div>
-                        <p class="text-slate-400 text-xs mt-1">Haz clic en cualquier Pokémon para inspeccionar su ficha detallada de combate.</p>
+                        <p class="text-slate-400 text-xs mt-1">Haz clic en cualquier Pokémon para inspeccionar su ficha detallada de combate oficial.</p>
                     </div>
                     <div class="flex items-center gap-3 flex-wrap" id="profile-action-btn-container"></div>
                 </div>
@@ -254,8 +253,8 @@
             <div class="p-6 md:w-7/12 flex flex-col justify-between space-y-6">
                 <div>
                     <div class="flex items-center justify-between mb-3">
-                        <h4 class="text-xs font-black tracking-widest text-purple-400 uppercase flex items-center gap-1.5">📊 Stats Base</h4>
-                        <span id="detail-modal-source" class="text-[10px] bg-red-600/20 text-red-400 border border-red-600/40 px-2 py-0.5 rounded font-bold">Personalizado (Lunar)</span>
+                        <h4 class="text-xs font-black tracking-widest text-purple-400 uppercase flex items-center gap-1.5">📊 Stats Base PokéAPI</h4>
+                        <span class="text-[10px] bg-blue-600/20 text-blue-400 border border-blue-600/40 px-2 py-0.5 rounded font-bold">Oficial</span>
                     </div>
                     <div id="detail-modal-stats" class="space-y-2 text-xs"></div>
                 </div>
@@ -338,7 +337,7 @@
         </div>
     </div>
 
-    <!-- Script Principal con Conexión Cloud Firestore -->
+    <!-- Script Principal con Conexión Cloud Firestore y PokéAPI -->
     <script>
         // ==========================================
         // CONFIGURACIÓN DE FIREBASE FIRESTORE
@@ -356,7 +355,6 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        
         const officialTrainers = [
             "Rexitoo", "Faxzer0", "Redsam", "Alex96", 
             "Poke589", "ikerglz_", "Pedro2707", "Faze_Pedro2009", "Minimuesli", "Tiosanto", "Demonn1", "imxteoxyz", "Sebas Emperor", "Yeibrami", "TheMaxis", "frannsann", "_Crema", "Ima", "Uligremh3", "Thiagoo", "gogobaneado", "enrique_pastor11", "Niyhu", "Pewpew"
@@ -391,17 +389,14 @@
                     tournamentData = serverData.tournamentData || {};
                     accounts = serverData.accounts || {};
                     
-                    // Asegurar cuentas por defecto si no existen
                     officialTrainers.forEach(t => { 
                         if (!accounts[t]) accounts[t] = "1234"; 
                     });
 
-                    // Actualizar indicadores visuales de nube sincronizada
                     statusIndicator.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500"></span> <span class="text-emerald-400 font-medium">Sincronizado en vivo</span>';
                     sidebarDot.className = "w-2 h-2 rounded-full bg-emerald-500";
                     sidebarText.textContent = "Sincronizado OK";
 
-                    // Refrescar vistas actuales
                     updateAuthHeader();
                     renderHomeRanking();
                     renderParticipantsGrid();
@@ -411,7 +406,6 @@
                     }
                     document.getElementById('stat-total-participants').textContent = officialTrainers.length;
                 } else {
-                    // Si el documento está vacío en la nube, lo inicializamos
                     saveDataToStorage();
                 }
             }, (error) => {
@@ -426,7 +420,6 @@
             initRealtimeSync();
         });
 
-        // Función para enviar los cambios a la nube Firestore
         function saveDataToStorage() {
             db.collection("nuzlocke_torneo").doc("datos_globales").set({
                 tournamentData: tournamentData,
@@ -750,50 +743,39 @@
             document.getElementById('detail-modal-img').src = getPokemonSpriteUrl(p.species);
             document.getElementById('detail-modal-id').textContent = '#----';
 
+            document.getElementById('detail-modal-types').innerHTML = '<span class="text-xs text-slate-500">Cargando tipos...</span>';
+            document.getElementById('detail-modal-stats').innerHTML = '<div class="text-slate-500 text-xs">Cargando estadísticas...</div>';
+            document.getElementById('detail-modal-weaknesses').innerHTML = '<span class="text-xs text-slate-500">Calculando debilidades...</span>';
+
             const queryName = p.species.toLowerCase().trim()
                 .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
                 .replace(/[^a-z0-9]/g, "");
 
-            const customStats = customLunarStats[queryName];
+            try {
+                const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${queryName}`);
+                if (!res.ok) throw new Error("Pokémon no encontrado");
+                const data = await res.json();
 
-            if (customStats) {
-                document.getElementById('detail-modal-source').textContent = "Personalizado (Lunar)";
-                document.getElementById('detail-modal-source').className = "text-[10px] bg-red-600/20 text-red-400 border border-red-600/40 px-2 py-0.5 rounded font-bold";
-                renderStatsAndTypes(customStats, queryName, p.species);
-            } else {
-                document.getElementById('detail-modal-source').textContent = "PokéAPI (Original)";
-                document.getElementById('detail-modal-source').className = "text-[10px] bg-blue-600/20 text-blue-400 border border-blue-600/40 px-2 py-0.5 rounded font-bold";
+                document.getElementById('detail-modal-id').textContent = `#${String(data.id).padStart(4, '0')}`;
+                
+                const apiStats = {
+                    hp: data.stats.find(s => s.stat.name === 'hp').base_stat,
+                    atk: data.stats.find(s => s.stat.name === 'attack').base_stat,
+                    def: data.stats.find(s => s.stat.name === 'defense').base_stat,
+                    spa: data.stats.find(s => s.stat.name === 'special-attack').base_stat,
+                    spd: data.stats.find(s => s.stat.name === 'special-defense').base_stat,
+                    spe: data.stats.find(s => s.stat.name === 'speed').base_stat
+                };
 
-                document.getElementById('detail-modal-types').innerHTML = '<span class="text-xs text-slate-500">Cargando tipos...</span>';
-                document.getElementById('detail-modal-stats').innerHTML = '<div class="text-slate-500 text-xs">Cargando estadísticas...</div>';
-                document.getElementById('detail-modal-weaknesses').innerHTML = '<span class="text-xs text-slate-500">Calculando debilidades...</span>';
-
-                try {
-                    const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${queryName}`);
-                    if (!res.ok) throw new Error("Pokémon no encontrado");
-                    const data = await res.json();
-
-                    document.getElementById('detail-modal-id').textContent = `#${String(data.id).padStart(4, '0')}`;
-                    
-                    const apiStats = {
-                        hp: data.stats.find(s => s.stat.name === 'hp').base_stat,
-                        atk: data.stats.find(s => s.stat.name === 'attack').base_stat,
-                        def: data.stats.find(s => s.stat.name === 'defense').base_stat,
-                        spa: data.stats.find(s => s.stat.name === 'special-attack').base_stat,
-                        spd: data.stats.find(s => s.stat.name === 'special-defense').base_stat,
-                        spe: data.stats.find(s => s.stat.name === 'speed').base_stat
-                    };
-
-                    renderStatsAndTypes(apiStats, queryName, p.species, data.types.map(t => t.type.url));
-                } catch (err) {
-                    document.getElementById('detail-modal-types').innerHTML = '<span class="text-xs text-red-400">Tipo no disponible</span>';
-                    document.getElementById('detail-modal-stats').innerHTML = '<div class="text-xs text-slate-500">Stats no disponibles.</div>';
-                    document.getElementById('detail-modal-weaknesses').innerHTML = '<span class="text-xs text-slate-500">No se pudieron calcular debilidades.</span>';
-                }
+                renderStatsAndTypes(apiStats, data.types.map(t => t.type.url), data.types);
+            } catch (err) {
+                document.getElementById('detail-modal-types').innerHTML = '<span class="text-xs text-red-400">Pokémon no encontrado en PokéAPI</span>';
+                document.getElementById('detail-modal-stats').innerHTML = '<div class="text-xs text-slate-500">Stats no disponibles.</div>';
+                document.getElementById('detail-modal-weaknesses').innerHTML = '<span class="text-xs text-slate-500">No se pudieron calcular debilidades.</span>';
             }
         }
 
-        async function renderStatsAndTypes(statsObj, queryName, speciesName, preloadedTypeUrls = null) {
+        async function renderStatsAndTypes(statsObj, typeUrls, typesData) {
             const statMapping = [
                 { key: 'hp', name: 'PS' },
                 { key: 'atk', name: 'Ataque' },
@@ -812,7 +794,7 @@
                         <span class="w-20 text-slate-400 font-semibold">${s.name}</span>
                         <span class="w-8 text-right font-bold text-white">${val}</span>
                         <div class="flex-1 bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-800/60">
-                            <div class="bg-red-500 h-full rounded-full" style="width: ${percentage}%"></div>
+                            <div class="bg-blue-500 h-full rounded-full" style="width: ${percentage}%"></div>
                         </div>
                     </div>
                 `;
@@ -828,39 +810,13 @@
                 dark: 'bg-neutral-800 text-white', steel: 'bg-slate-500 text-white', fairy: 'bg-rose-400 text-black font-bold'
             };
 
-            let typeUrls = preloadedTypeUrls;
-
-            if (customLunarTypes[queryName]) {
-                const customTypesList = customLunarTypes[queryName];
-                let typesHtml = '';
-                typeUrls = []; 
-
-                customTypesList.forEach(tName => {
-                    const colorClass = typeColors[tName] || 'bg-slate-700 text-white';
-                    typesHtml += `<span class="text-[10px] uppercase font-extrabold px-3 py-1 rounded-full ${colorClass}">${tName}</span>`;
-                    typeUrls.push(`https://pokeapi.co/api/v2/type/${tName}`);
-                });
-                document.getElementById('detail-modal-types').innerHTML = typesHtml;
-            } else if (!typeUrls) {
-                try {
-                    const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${queryName}`);
-                    if (res.ok) {
-                        const data = await res.json();
-                        document.getElementById('detail-modal-id').textContent = `#${String(data.id).padStart(4, '0')}`;
-                        typeUrls = data.types.map(t => t.type.url);
-
-                        let typesHtml = '';
-                        data.types.forEach(t => {
-                            const tName = t.type.name;
-                            const colorClass = typeColors[tName] || 'bg-slate-700 text-white';
-                            typesHtml += `<span class="text-[10px] uppercase font-extrabold px-3 py-1 rounded-full ${colorClass}">${tName}</span>`;
-                        });
-                        document.getElementById('detail-modal-types').innerHTML = typesHtml;
-                    }
-                } catch(e) {
-                    document.getElementById('detail-modal-types').innerHTML = '<span class="text-xs text-slate-500">Tipos estándar</span>';
-                }
-            }
+            let typesHtml = '';
+            typesData.forEach(t => {
+                const tName = t.type.name;
+                const colorClass = typeColors[tName] || 'bg-slate-700 text-white';
+                typesHtml += `<span class="text-[10px] uppercase font-extrabold px-3 py-1 rounded-full ${colorClass}">${tName}</span>`;
+            });
+            document.getElementById('detail-modal-types').innerHTML = typesHtml;
 
             if (typeUrls && typeUrls.length > 0) {
                 calculateWeaknessesAndResistances(typeUrls);
@@ -978,7 +934,7 @@
             let deathsInTramo = existingPokemon ? (existingPokemon.deathsInTramo || 0) : 0;
 
             if (status === 'dead' && (!existingPokemon || existingPokemon.status !== 'dead')) {
-                deathsInTramo += 1;
+                deathsInTram= (deathsInTramo += 1); // fix counter assignment
             }
 
             if (editId) {
