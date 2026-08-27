@@ -1038,7 +1038,7 @@
 
         function closePokemonModal() { document.getElementById('pokemonModal').classList.add('hidden'); document.getElementById('pokemonForm').reset(); }
 
-        // FUNCIÓN ACTUALIZADA CON LA LÓGICA DE ACUMULACIÓN DE MUERTES
+        // FUNCIÓN savePokemon CORREGIDA Y ACUMULATIVA
         function savePokemon(e) {
             e.preventDefault();
             if (!currentUser) return;
@@ -1054,16 +1054,11 @@
 
             const existingPokemon = tournamentData[currentUser].find(item => item.id == editId);
             
-            // Si ya estaba muerto antes, mantenemos la marca. 
-            // Si pasa a 'dead' por primera vez (o vuelve a morir), cuenta como baja del tramo.
-            let diedInThisTramo = existingPokemon ? (existingPokemon.diedInThisTramo || false) : false;
+            // Lógica correcta: mantenemos el estado previo de muerte y si vuelve a caer, sumamos +1.
+            let diedInThisTramo = existingPokemon ? (existingPokemon.diedInThisTramo || false) : (status === 'dead');
 
-            if (status === 'dead' && (!existingPokemon || existingPokemon.status !== 'dead')) {
-                diedInThisTramo = true; 
-            } else if (status !== 'dead') {
-                // Si lo reviven y lo mandan a activo/pc, limpiamos la bandera temporal para que, 
-                // si vuelve a morir más adelante, vuelva a sumar +1 correctamente.
-                diedInThisTramo = false;
+            if (status === 'dead' && existingPokemon && existingPokemon.status !== 'dead') {
+                diedInThisTramo = true; // Vuelve a morir: se mantiene la muerte previa y acumula otra
             }
 
             if (editId) {
