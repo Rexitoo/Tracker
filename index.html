@@ -1,144 +1,16 @@
 <!DOCTYPE html>
 <html lang="es">
-<head><!DOCTYPE html>
-<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nuzlocke Tournament Hub</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Firebase App y Firestore (Compat version) -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-</head>
-<body class="bg-slate-900 text-slate-100 min-h-screen font-sans">
-
-    <div class="container mx-auto px-4 py-8">
-        <header class="text-center mb-10">
-            <h1 class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-500">
-                Nuzlocke Tournament Hub
-            </h1>
-            <p class="text-slate-400 mt-2">Sincronización en vivo con la nube</p>
-        </header>
-
-        <!-- Panel de Estado de Conexión -->
-        <div id="sync-status" class="max-w-xl mx-auto mb-6 p-4 rounded-xl bg-slate-800 border border-slate-700 text-center text-sm">
-            <span class="inline-block w-3 h-3 rounded-full bg-yellow-500 mr-2 animate-pulse"></span>
-            Conectando a la nube...
-        </div>
-
-        <!-- Contenedor Principal de la App -->
-        <main class="max-w-4xl mx-auto bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl">
-            <div id="app-content">
-                <div class="text-center py-10">
-                    <p class="text-slate-400">Cargando datos del torneo...</p>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <script>
-        // ==========================================
-        // 1. CONFIGURACIÓN DE FIREBASE
-        // ==========================================
-        const firebaseConfig = {
-  apiKey: "AIzaSyCAnnPrFKHu7RUuSmaYXRfAh1Q6OrmYLIk",
-  authDomain: "tracker-f5a8d.firebaseapp.com",
-  projectId: "tracker-f5a8d",
-  storageBucket: "tracker-f5a8d.firebasestorage.app",
-  messagingSenderId: "525323874728",
-  appId: "1:525323874728:web:1e9c6bb01f9c3230f72d9d",
-  measurementId: "G-Z20HBSC2RK"
-};
-
-        // Inicializar Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-
-        // ==========================================
-        // 2. VARIABLES GLOBALES
-        // ==========================================
-        let accounts = {};
-        let tournamentData = {};
-        let currentUser = localStorage.getItem('nuzlocke_current_user_v11') || null;
-        const officialTrainers = ["Entrenador 1", "Entrenador 2", "Entrenador 3"]; // Ejemplo de entrenadores
-
-        // ==========================================
-        // 3. SINCRONIZACIÓN EN TIEMPO REAL
-        // ==========================================
-        function initRealtimeSync() {
-            const statusIndicator = document.getElementById('sync-status');
-
-            // Escucha en vivo cualquier cambio en la base de datos
-            db.collection("nuzlocke_torneo").doc("datos_globales").onSnapshot((doc) => {
-                if (doc.exists) {
-                    const serverData = doc.data();
-                    tournamentData = serverData.tournamentData || {};
-                    accounts = serverData.accounts || {};
-                    
-                    // Asegurar cuentas por defecto
-                    officialTrainers.forEach(t => { 
-                        if (!accounts[t]) accounts[t] = "1234"; 
-                    });
-
-                    // Actualizar indicador visual de conexión en vivo
-                    statusIndicator.innerHTML = '<span class="inline-block w-3 h-3 rounded-full bg-emerald-500 mr-2"></span> Sincronizado en vivo con la nube';
-                    
-                    // Renderizar la interfaz
-                    renderUI();
-                } else {
-                    // Si no existe el documento, creamos los datos iniciales vacíos
-                    saveDataToCloud();
-                }
-            }, (error) => {
-                console.error("Error al sincronizar: ", error);
-                statusIndicator.innerHTML = '<span class="inline-block w-3 h-3 rounded-full bg-red-500 mr-2"></span> Error de conexión con la nube';
-            });
-        }
-
-        // Función para guardar cambios en la nube
-        function saveDataToStorage() {
-            db.collection("nuzlocke_torneo").doc("datos_globales").set({
-                tournamentData: tournamentData,
-                accounts: accounts
-            }).catch((error) => {
-                console.error("Error al guardar en la nube: ", error);
-            });
-        }
-
-        // Alias por si tu código usa saveDataToCloud
-        function saveDataToCloud() {
-            saveDataToStorage();
-        }
-
-        // ==========================================
-        // 4. RENDERIZADO BÁSICO DE PRUEBA
-        // ==========================================
-        function renderUI() {
-            const container = document.getElementById('app-content');
-            container.innerHTML = `
-                <h2 class="text-2xl font-bold mb-4 text-emerald-400">Panel del Torneo</h2>
-                <p class="text-slate-300 mb-4">Los datos se actualizan automáticamente en tiempo real para todos los usuarios conectados.</p>
-                <div class="bg-slate-900 p-4 rounded-lg border border-slate-700">
-                    <p class="text-sm text-slate-400">Usuario actual: <span class="text-white font-semibold">${currentUser || 'Ninguno'}</span></p>
-                </div>
-            `;
-        }
-
-        // Iniciar al cargar la página
-        window.addEventListener('DOMContentLoaded', () => {
-            initRealtimeSync();
-        });
-    </script>
-</body>
-</html>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nuzlocke Tournament Hub - Randomlocke</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Firebase App y Firestore (Compat version) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
     <style>
         body { background-color: #0b0f17; color: #f8fafc; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -160,6 +32,10 @@
         </div>
 
         <div class="flex items-center gap-4">
+            <!-- Indicador de conexión en la nube -->
+            <div id="sync-status" class="hidden sm:flex items-center gap-2 text-xs bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg text-yellow-400 font-medium">
+                <span class="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></span> Sincronizando...
+            </div>
             <button onclick="exportData()" title="Descargar copia de seguridad" class="hidden sm:flex items-center gap-1.5 text-xs text-slate-300 bg-slate-900 hover:bg-slate-800 border border-slate-800 px-3 py-1.5 rounded-lg transition font-medium">
                 <span>💾</span> <span>Backup Datos</span>
             </button>
@@ -197,8 +73,8 @@
             </nav>
 
             <div class="text-[11px] text-slate-500 px-3 py-2 border-t border-slate-800/60 flex justify-between items-center">
-                <span>Guardado OK</span>
-                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span id="sidebar-sync-text">Nube Activa</span>
+                <span id="sidebar-sync-dot" class="w-2 h-2 rounded-full bg-yellow-500"></span>
             </div>
         </aside>
 
@@ -462,8 +338,24 @@
         </div>
     </div>
 
-    <!-- Script Principal -->
+    <!-- Script Principal con Conexión Cloud Firestore -->
     <script>
+        // ==========================================
+        // CONFIGURACIÓN DE FIREBASE FIRESTORE
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyCAnnPrFKHu7RUuSmayXRfAh1Q6OrmYLIk",
+            authDomain: "tracker-f5a8d.firebaseapp.com",
+            projectId: "tracker-f5a8d",
+            storageBucket: "tracker-f5a8d.firebasestorage.app",
+            messagingSenderId: "525323874728",
+            appId: "1:525323874728:web:1e9c6bb01f9c3230f72d9d",
+            measurementId: "G-Z20HBSC2RK"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
         // BASE DE DATOS DE ESTADÍSTICAS MODIFICADAS (DESAFÍO LUNAR)
         const customLunarStats = {
             "butterfree": { hp: 60, atk: 45, def: 50, spa: 100, spd: 90, spe: 75 },
@@ -601,7 +493,6 @@
             "drampa": { hp: 100, atk: 60, def: 85, spa: 135, spd: 85, spe: 35 }
         };
 
-        // TIPOS MODIFICADOS (DESAFÍO LUNAR)
         const customLunarTypes = {
             "corsola": ["water"],
             "delibird": ["ice"],
@@ -616,11 +507,8 @@
             "Poke589", "ikerglz_", "Pedro2707", "Faze_Pedro2009", "Minimuesli", "Tiosanto", "Demonn1", "imxteoxyz", "Sebas Emperor", "Yeibrami", "TheMaxis", "frannsann", "_Crema", "Ima", "Uligremh3", "Thiagoo", "gogobaneado", "enrique_pastor11", "Niyhu", "Pewpew"
         ];
 
-        let accounts = JSON.parse(localStorage.getItem('nuzlocke_accounts_v11')) || {};
-        officialTrainers.forEach(t => { if (!accounts[t]) accounts[t] = "1234"; });
-        localStorage.setItem('nuzlocke_accounts_v11', JSON.stringify(accounts));
-
-        let tournamentData = JSON.parse(localStorage.getItem('nuzlocke_data_v11')) || {};
+        let accounts = {};
+        let tournamentData = {};
         let currentUser = localStorage.getItem('nuzlocke_current_user_v11') || null;
         let viewingTrainer = null;
         let selectedLoginTrainer = null;
@@ -634,17 +522,64 @@
             return `https://img.pokemondb.net/sprites/sword-shield/icon/${formatted}.png`;
         }
 
+        // ==========================================
+        // SINCRONIZACIÓN EN TIEMPO REAL CON FIRESTORE
+        // ==========================================
+        function initRealtimeSync() {
+            const statusIndicator = document.getElementById('sync-status');
+            const sidebarDot = document.getElementById('sidebar-sync-dot');
+            const sidebarText = document.getElementById('sidebar-sync-text');
+
+            db.collection("nuzlocke_torneo").doc("datos_globales").onSnapshot((doc) => {
+                if (doc.exists) {
+                    const serverData = doc.data();
+                    tournamentData = serverData.tournamentData || {};
+                    accounts = serverData.accounts || {};
+                    
+                    // Asegurar cuentas por defecto si no existen
+                    officialTrainers.forEach(t => { 
+                        if (!accounts[t]) accounts[t] = "1234"; 
+                    });
+
+                    // Actualizar indicadores visuales de nube sincronizada
+                    statusIndicator.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500"></span> <span class="text-emerald-400 font-medium">Sincronizado en vivo</span>';
+                    sidebarDot.className = "w-2 h-2 rounded-full bg-emerald-500";
+                    sidebarText.textContent = "Sincronizado OK";
+
+                    // Refrescar vistas actuales
+                    updateAuthHeader();
+                    renderHomeRanking();
+                    renderParticipantsGrid();
+                    updateGlobalStats();
+                    if (!document.getElementById('view-profile').classList.contains('hidden')) {
+                        renderProfileView();
+                    }
+                    document.getElementById('stat-total-participants').textContent = officialTrainers.length;
+                } else {
+                    // Si el documento está vacío en la nube, lo inicializamos
+                    saveDataToStorage();
+                }
+            }, (error) => {
+                console.error("Error al sincronizar con Firebase: ", error);
+                statusIndicator.innerHTML = '<span class="w-2 h-2 rounded-full bg-red-500"></span> <span class="text-red-400 font-medium">Error de conexión</span>';
+                sidebarDot.className = "w-2 h-2 rounded-full bg-red-500";
+                sidebarText.textContent = "Error de red";
+            });
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
-            updateAuthHeader();
-            renderHomeRanking();
-            renderParticipantsGrid();
-            updateGlobalStats();
-            document.getElementById('stat-total-participants').textContent = officialTrainers.length;
+            initRealtimeSync();
         });
 
+        // Función para enviar los cambios a la nube Firestore
         function saveDataToStorage() {
-            localStorage.setItem('nuzlocke_data_v11', JSON.stringify(tournamentData));
-            localStorage.setItem('nuzlocke_accounts_v11', JSON.stringify(accounts));
+            db.collection("nuzlocke_torneo").doc("datos_globales").set({
+                tournamentData: tournamentData,
+                accounts: accounts
+            }).catch((error) => {
+                console.error("Error al guardar en Firestore: ", error);
+                alert("Error al guardar los cambios en la nube. Revisa tu conexión.");
+            });
         }
 
         function exportData() {
@@ -719,7 +654,7 @@
             const newPass = document.getElementById('new-pass-input').value;
             if (newPass.trim().length > 0 && currentUser) {
                 accounts[currentUser] = newPass;
-                saveDataToStorage(); alert('¡Contraseña actualizada!');
+                saveDataToStorage(); alert('¡Contraseña actualizada en la nube!');
                 document.getElementById('new-pass-input').value = '';
             }
         }
@@ -730,13 +665,13 @@
             updateAuthHeader(); switchView('participants');
         }
 
-        // Función corregida: suma las muertes numéricas acumuladas de todos los Pokémon del entrenador
         function countActiveDeaths(trainerName) {
             return (tournamentData[trainerName] || []).reduce((acc, p) => acc + (p.deathsInTramo || 0), 0);
         }
 
         function renderHomeRanking() {
             const list = document.getElementById('home-ranking-list');
+            if (!list) return;
             list.innerHTML = '';
             const sortedTrainers = [...officialTrainers].sort((a, b) => countActiveDeaths(a) - countActiveDeaths(b));
 
@@ -762,6 +697,7 @@
 
         function renderParticipantsGrid() {
             const grid = document.getElementById('participants-grid');
+            if (!grid) return;
             grid.innerHTML = '';
             const searchVal = document.getElementById('pokemon-search-input') ? document.getElementById('pokemon-search-input').value.toLowerCase().trim() : '';
 
@@ -829,11 +765,12 @@
                 });
             });
 
-            document.getElementById('stat-total-deaths').textContent = totalGlobalDeaths;
-            document.getElementById('stat-fewest-deaths').textContent = `${minD.name} (${minD.deaths} muertes)`;
-            document.getElementById('stat-most-deaths').textContent = `${maxD.name} (${maxD.deaths} muertes)`;
+            if (document.getElementById('stat-total-deaths')) document.getElementById('stat-total-deaths').textContent = totalGlobalDeaths;
+            if (document.getElementById('stat-fewest-deaths')) document.getElementById('stat-fewest-deaths').textContent = `${minD.name} (${minD.deaths} muertes)`;
+            if (document.getElementById('stat-most-deaths')) document.getElementById('stat-most-deaths').textContent = `${maxD.name} (${maxD.deaths} muertes)`;
 
             const mostUsedContainer = document.getElementById('stat-most-used-pokemons');
+            if (!mostUsedContainer) return;
             mostUsedContainer.innerHTML = '';
             const sortedSpecies = Object.entries(speciesCount).sort((a, b) => b[1] - a[1]).slice(0, 5);
 
@@ -967,7 +904,6 @@
             if (customStats) {
                 document.getElementById('detail-modal-source').textContent = "Personalizado (Lunar)";
                 document.getElementById('detail-modal-source').className = "text-[10px] bg-red-600/20 text-red-400 border border-red-600/40 px-2 py-0.5 rounded font-bold";
-                
                 renderStatsAndTypes(customStats, queryName, p.species);
             } else {
                 document.getElementById('detail-modal-source').textContent = "PokéAPI (Original)";
@@ -979,7 +915,7 @@
 
                 try {
                     const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${queryName}`);
-                    if (!res.ok) throw new Error("Pokémon no encontrado en la API");
+                    if (!res.ok) throw new Error("Pokémon no encontrado");
                     const data = await res.json();
 
                     document.getElementById('detail-modal-id').textContent = `#${String(data.id).padStart(4, '0')}`;
@@ -994,7 +930,6 @@
                     };
 
                     renderStatsAndTypes(apiStats, queryName, p.species, data.types.map(t => t.type.url));
-
                 } catch (err) {
                     document.getElementById('detail-modal-types').innerHTML = '<span class="text-xs text-red-400">Tipo no disponible</span>';
                     document.getElementById('detail-modal-stats').innerHTML = '<div class="text-xs text-slate-500">Stats no disponibles.</div>';
@@ -1122,7 +1057,6 @@
                 });
 
                 document.getElementById('detail-modal-weaknesses').innerHTML = weakHtml || '<span class="text-xs text-slate-400">Sin debilidades destacables.</span>';
-
             } catch (e) {
                 document.getElementById('detail-modal-weaknesses').innerHTML = '<span class="text-xs text-slate-500">Error al calcular debilidades.</span>';
             }
@@ -1132,7 +1066,6 @@
             document.getElementById('pokemonDetailsModal').classList.add('hidden');
         }
 
-        // Función de reseteo de admin adaptada al contador numérico de muertes
         function adminResetTramoDeaths(trainerName) {
             if (currentUser !== "Rexitoo") return;
             if (confirm(`[ADMIN] ¿Iniciar nuevo tramo para ${trainerName}? Las muertes actuales pasarán a ser históricas y el contador actual volverá a 0.`)) {
@@ -1143,8 +1076,7 @@
                             : { ...p, deathsInTramo: 0 };
                     });
                     saveDataToStorage();
-                    renderProfileView(); renderHomeRanking(); renderParticipantsGrid(); updateGlobalStats();
-                    alert(`¡Nuevo tramo iniciado para ${trainerName}!`);
+                    alert(`¡Nuevo tramo iniciado para ${trainerName} en la nube!`);
                 }
             }
         }
@@ -1174,7 +1106,6 @@
 
         function closePokemonModal() { document.getElementById('pokemonModal').classList.add('hidden'); document.getElementById('pokemonForm').reset(); }
 
-        // FUNCIÓN savePokemon CON CONTADOR NUMÉRICO ACUMULATIVO
         function savePokemon(e) {
             e.preventDefault();
             if (!currentUser) return;
@@ -1189,51 +1120,33 @@
             if (!tournamentData[currentUser]) tournamentData[currentUser] = [];
 
             const existingPokemon = tournamentData[currentUser].find(item => item.id == editId);
-            
-            // Mantenemos el contador de muertes previo que tuviera el Pokémon
             let deathsInTramo = existingPokemon ? (existingPokemon.deathsInTramo || 0) : 0;
 
-            // Si ahora se cambia el estado a 'dead' y ANTES no estaba en estado 'dead', sumamos +1 al contador
             if (status === 'dead' && (!existingPokemon || existingPokemon.status !== 'dead')) {
                 deathsInTramo += 1;
             }
 
             if (editId) {
                 tournamentData[currentUser] = tournamentData[currentUser].map(p => p.id == editId ? { 
-                    ...p, 
-                    species, 
-                    nickname, 
-                    route, 
-                    nature, 
-                    ability, 
-                    status, 
-                    deathsInTramo 
+                    ...p, species, nickname, route, nature, ability, status, deathsInTramo 
                 } : p);
             } else {
                 tournamentData[currentUser].push({ 
-                    id: Date.now(), 
-                    species, 
-                    nickname, 
-                    route, 
-                    nature, 
-                    ability, 
-                    status, 
+                    id: Date.now(), species, nickname, route, nature, ability, status, 
                     deathsInTramo: (status === 'dead' ? 1 : 0) 
                 });
             }
 
             saveDataToStorage();
             closePokemonModal();
-            renderProfileView(); renderHomeRanking(); renderParticipantsGrid(); updateGlobalStats();
         }
 
         function deletePokemon(id) {
             if (!currentUser) return;
             if (currentUser !== viewingTrainer && currentUser !== "Rexitoo") return;
-            if (confirm('¿Eliminar este registro permanentemente?')) {
+            if (confirm('¿Eliminar este registro permanentemente de la nube?')) {
                 tournamentData[viewingTrainer] = tournamentData[viewingTrainer].filter(p => p.id !== id);
                 saveDataToStorage();
-                renderProfileView(); renderHomeRanking(); renderParticipantsGrid(); updateGlobalStats();
             }
         } 
     </script>
