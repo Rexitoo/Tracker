@@ -119,7 +119,7 @@
                 <div class="bg-[#121824] border border-slate-800/80 px-6 py-4 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
                         <h2 class="font-bold text-lg text-white">Roster completo del torneo</h2>
-                        <p class="text-xs text-slate-400">Haz clic en cualquier participante para ver sus fichas y pincha en sus Pokémon para abrir su tarjeta detallada.</p>
+                        <p class="text-xs text-slate-400">Haz clic en cualquier participante para ver sus fichas y pincha en sus Pokémon para abrir su tarjeta detallada (con estadísticas y tipos personalizados del Desafío Lunar).</p>
                     </div>
                     <div class="w-full sm:w-auto">
                         <input type="text" id="pokemon-search-input" oninput="renderParticipantsGrid()" placeholder="🔍 Buscar Pokémon o Entrenador..." class="w-full sm:w-64 bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-slate-700">
@@ -597,9 +597,9 @@
             updateAuthHeader(); switchView('participants');
         }
 
-        // Modificado para contar muertes de forma permanente sin descontar al revivir
+        // Modificado para contar mediante la bandera permanente del tramo
         function countActiveDeaths(trainerName) {
-            return (tournamentData[trainerName] || []).filter(p => p.hasDied || p.status === 'dead').length;
+            return (tournamentData[trainerName] || []).filter(p => p.diedInThisTramo === true).length;
         }
 
         function renderHomeRanking() {
@@ -998,11 +998,16 @@
             document.getElementById('pokemonDetailsModal').classList.add('hidden');
         }
 
+        // Actualizado para limpiar la bandera de muerte de tramo al iniciar uno nuevo
         function adminResetTramoDeaths(trainerName) {
             if (currentUser !== "Rexitoo") return;
             if (confirm(`[ADMIN] ¿Iniciar nuevo tramo para ${trainerName}? Las muertes actuales pasarán a ser históricas y el contador actual volverá a 0.`)) {
                 if (tournamentData[trainerName]) {
-                    tournamentData[trainerName] = tournamentData[trainerName].map(p => p.status === 'dead' ? { ...p, status: 'dead_history' } : p);
+                    tournamentData[trainerName] = tournamentData[trainerName].map(p => {
+                        return p.status === 'dead' 
+                            ? { ...p, status: 'dead_history', diedInThisTramo: false } 
+                            : { ...p, diedInThisTramo: false };
+                    });
                     saveDataToStorage();
                     renderProfileView(); renderHomeRanking(); renderParticipantsGrid(); updateGlobalStats();
                     alert(`¡Nuevo tramo iniciado para ${trainerName}!`);
@@ -1035,7 +1040,7 @@
 
         function closePokemonModal() { document.getElementById('pokemonModal').classList.add('hidden'); document.getElementById('pokemonForm').reset(); }
 
-        // Modificado para fijar permanentemente la muerte (hasDied: true) al guardar o cambiar a dead
+        // Actualizado para asignar la bandera permanente 'diedInThisTramo' cuando el estado cambia a 'dead'
         function savePokemon(e) {
             e.preventDefault();
             if (!currentUser) return;
@@ -1049,17 +1054,35 @@
 
             if (!tournamentData[currentUser]) tournamentData[currentUser] = [];
 
+            const existingPokemon = tournamentData[currentUser].find(item => item.id == editId);
+            let diedInThisTramo = existingPokemon ? (existingPokemon.diedInThisTramo || false) : false;
+
+            if (status === 'dead' && !diedInThisTramo) {
+                diedInThisTramo = true;
+            }
+
             if (editId) {
-                tournamentData[currentUser] = tournamentData[currentUser].map(p => {
-                    if (p.id == editId) {
-                        const hasDied = (status === 'dead' || p.hasDied);
-                        return { ...p, species, nickname, route, nature, ability, status, hasDied };
-                    }
-                    return p;
-                });
+                tournamentData[currentUser] = tournamentData[currentUser].map(p => p.id == editId ? { 
+                    ...p, 
+                    species, 
+                    nickname, 
+                    route, 
+                    nature, 
+                    ability, 
+                    status, 
+                    diedInThisTramo 
+                } : p);
             } else {
-                const hasDied = (status === 'dead');
-                tournamentData[currentUser].push({ id: Date.now(), species, nickname, route, nature, ability, status, hasDied });
+                tournamentData[currentUser].push({ 
+                    id: Date.now(), 
+                    species, 
+                    nickname, 
+                    route, 
+                    nature, 
+                    ability, 
+                    status, 
+                    diedInThisTramo 
+                });
             }
 
             saveDataToStorage();
