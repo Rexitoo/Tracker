@@ -597,8 +597,9 @@
             updateAuthHeader(); switchView('participants');
         }
 
+        // Función corregida: suma las muertes numéricas acumuladas de todos los Pokémon del entrenador
         function countActiveDeaths(trainerName) {
-            return (tournamentData[trainerName] || []).filter(p => p.diedInThisTramo === true).length;
+            return (tournamentData[trainerName] || []).reduce((acc, p) => acc + (p.deathsInTramo || 0), 0);
         }
 
         function renderHomeRanking() {
@@ -788,6 +789,7 @@
                                 <span class="font-bold text-white text-sm">${p.species}</span>
                                 ${p.nickname ? `<span class="text-slate-400 italic text-xs">"${p.nickname}"</span>` : ''}
                                 ${isHistoricalDead ? '<span class="text-[10px] bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded">Tramo ant.</span>' : ''}
+                                ${p.deathsInTramo && p.deathsInTramo > 0 ? `<span class="text-[10px] bg-red-500/20 text-red-400 border border-red-500/40 px-1.5 py-0.5 rounded font-bold">${p.deathsInTramo} muertes</span>` : ''}
                             </div>
                             <div class="text-[11px] text-slate-400 mt-1 space-y-0.5">
                                 <div>📍 <span class="text-amber-300">${p.route}</span></div>
@@ -997,14 +999,15 @@
             document.getElementById('pokemonDetailsModal').classList.add('hidden');
         }
 
+        // Función de reseteo de admin adaptada al contador numérico de muertes
         function adminResetTramoDeaths(trainerName) {
             if (currentUser !== "Rexitoo") return;
             if (confirm(`[ADMIN] ¿Iniciar nuevo tramo para ${trainerName}? Las muertes actuales pasarán a ser históricas y el contador actual volverá a 0.`)) {
                 if (tournamentData[trainerName]) {
                     tournamentData[trainerName] = tournamentData[trainerName].map(p => {
                         return p.status === 'dead' 
-                            ? { ...p, status: 'dead_history', diedInThisTramo: false } 
-                            : { ...p, diedInThisTramo: false };
+                            ? { ...p, status: 'dead_history', deathsInTramo: 0 } 
+                            : { ...p, deathsInTramo: 0 };
                     });
                     saveDataToStorage();
                     renderProfileView(); renderHomeRanking(); renderParticipantsGrid(); updateGlobalStats();
@@ -1038,7 +1041,7 @@
 
         function closePokemonModal() { document.getElementById('pokemonModal').classList.add('hidden'); document.getElementById('pokemonForm').reset(); }
 
-        // FUNCIÓN savePokemon CORREGIDA Y ACUMULATIVA
+        // FUNCIÓN savePokemon CON CONTADOR NUMÉRICO ACUMULATIVO
         function savePokemon(e) {
             e.preventDefault();
             if (!currentUser) return;
@@ -1054,11 +1057,12 @@
 
             const existingPokemon = tournamentData[currentUser].find(item => item.id == editId);
             
-            // Lógica correcta: mantenemos el estado previo de muerte y si vuelve a caer, sumamos +1.
-            let diedInThisTramo = existingPokemon ? (existingPokemon.diedInThisTramo || false) : (status === 'dead');
+            // Mantenemos el contador de muertes previo que tuviera el Pokémon
+            let deathsInTramo = existingPokemon ? (existingPokemon.deathsInTramo || 0) : 0;
 
-            if (status === 'dead' && existingPokemon && existingPokemon.status !== 'dead') {
-                diedInThisTramo = true; // Vuelve a morir: se mantiene la muerte previa y acumula otra
+            // Si ahora se cambia el estado a 'dead' y ANTES no estaba en estado 'dead', sumamos +1 al contador
+            if (status === 'dead' && (!existingPokemon || existingPokemon.status !== 'dead')) {
+                deathsInTramo += 1;
             }
 
             if (editId) {
@@ -1070,7 +1074,7 @@
                     nature, 
                     ability, 
                     status, 
-                    diedInThisTramo 
+                    deathsInTramo 
                 } : p);
             } else {
                 tournamentData[currentUser].push({ 
@@ -1081,7 +1085,7 @@
                     nature, 
                     ability, 
                     status, 
-                    diedInThisTramo: (status === 'dead') 
+                    deathsInTramo: (status === 'dead' ? 1 : 0) 
                 });
             }
 
