@@ -499,7 +499,7 @@ let currentProfileTab = 'active';
 
 // Sincronización en tiempo real con Firestore
 function initFirebaseSync() {
-  const docRef = db.collection("nuzlocke_hub").document("main_data");
+  const docRef = db.collection("nuzlocke_hub").doc("main_data");
   
   docRef.onSnapshot((doc) => {
     if (doc.exists) {
