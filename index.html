@@ -528,7 +528,7 @@ function initFirebaseSync() {
 }
 
 function saveDataToFirebase() {
-  db.collection("nuzlocke_hub").document("main_data").set({
+  db.collection("nuzlocke_hub").doc("main_data").set({
     tournamentData,
     accounts
   }).catch((error) => {
