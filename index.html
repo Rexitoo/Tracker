@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Nuzlocke Tournament Hub - Randomlocke</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<!-- Firebase SDKs (Compat / CDN) -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 <style>
 body { background-color: #0b0f17; color: #f8fafc; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
 ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -60,7 +63,7 @@ body { background-color: #0b0f17; color: #f8fafc; font-family: system-ui, -apple
 </nav>
 <div class="text-[11px] text-slate-500 px-3 py-2 border-t border-slate-800/60 flex justify-between items-center">
 <span id="sync-status-text">Sincronizando...</span>
-<span id="sync-status-dot" class="w-2 h-2 rounded-full bg-amber-500"></span>
+<span id="sync-status-dot" class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
 </div>
 </aside>
 
@@ -316,12 +319,9 @@ body { background-color: #0b0f17; color: #f8fafc; font-family: system-ui, -apple
 </div>
 </div>
 
-<!-- Script Principal con la Nueva Base de Datos Firestore -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
-import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
+<!-- Script Principal con Firestore Integrado -->
+<script>
+// Configuración de Firebase (Proyecto: tracker-1043b)
 const firebaseConfig = {
   apiKey: "AIzaSyAg3YFvP_ZjbMPWMx8b0b3jWwOuBBBfAdQ",
   authDomain: "tracker-1043b.firebaseapp.com",
@@ -332,11 +332,9 @@ const firebaseConfig = {
   measurementId: "G-6QHST1SV2H"
 };
 
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-const db = getFirestore(app);
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-// Base de datos de estadísticas modificadas (Desafío Lunar)
 const customLunarStats = {
   "butterfree": { hp: 60, atk: 45, def: 50, spa: 100, spd: 90, spe: 75 },
   "beedrill": { hp: 65, atk: 90, def: 40, spa: 45, spd: 80, spe: 90 },
@@ -346,7 +344,7 @@ const customLunarStats = {
   "raichu": { hp: 60, atk: 90, def: 55, spa: 110, spd: 80, spe: 110 },
   "ninetales": { hp: 75, atk: 55, def: 75, spa: 100, spd: 100, spe: 100 },
   "wigglytuff": { hp: 140, atk: 70, def: 45, spa: 95, spd: 65, spe: 45 },
-  "parasect": { hp: 100, atk: 95, def: 80, spa: 60, spd: 80, spe: 50 },
+  "parasect: { hp: 100, atk: 95, def: 80, spa: 60, spd: 80, spe: 50 },
   "dugtrio": { hp: 55, atk: 120, def: 50, spa: 50, spd: 70, spe: 120 },
   "persian": { hp: 75, atk: 90, def: 60, spa: 65, spd: 65, spe: 115 },
   "primeape": { hp: 90, atk: 105, def: 60, spa: 60, spd: 70, spe: 95 },
@@ -490,58 +488,53 @@ const officialTrainers = [
   "gogobaneado", "enrique_pastor11", "Niyhu", "Pewpew"
 ];
 
-let accounts = JSON.parse(localStorage.getItem('nuzlocke_accounts_v11')) || {};
-officialTrainers.forEach(t => { if (!accounts[t]) accounts[t] = "1234"; });
+let accounts = {};
+officialTrainers.forEach(t => { accounts[t] = "1234"; });
 
 let tournamentData = {};
-let currentUser = localStorage.getItem('nuzlocke_current_user_v11') || null;
+let currentUser = localStorage.getItem('nuzlocke_current_user_tracker') || null;
 let viewingTrainer = null;
 let selectedLoginTrainer = null;
 let currentProfileTab = 'active';
 
-const docRef = doc(db, "randomlocke", "torneo_principal");
-
-onSnapshot(docRef, (docSnap) => {
-  const statusText = document.getElementById('sync-status-text');
-  const statusDot = document.getElementById('sync-status-dot');
+// Sincronización en tiempo real con Firestore
+function initFirebaseSync() {
+  const docRef = db.collection("nuzlocke_hub").document("main_data");
   
-  if (docSnap.exists()) {
-    const data = docSnap.data();
-    tournamentData = data.tournamentData || {};
-    if (data.accounts) accounts = data.accounts;
-    if (statusText) statusText.textContent = "Sincronizado en vivo";
-    if (statusDot) statusDot.className = "w-2 h-2 rounded-full bg-emerald-500";
-  } else {
-    tournamentData = JSON.parse(localStorage.getItem('nuzlocke_data_v11')) || {};
-    saveDataToStorage();
-    if (statusText) statusText.textContent = "Creado en Firestore";
-  }
-  
-  renderHomeRanking();
-  renderParticipantsGrid();
-  updateGlobalStats();
-  if (viewingTrainer) renderProfileView();
-}, (error) => {
-  const statusText = document.getElementById('sync-status-text');
-  const statusDot = document.getElementById('sync-status-dot');
-  if (statusText) statusText.textContent = "Error de Red";
-  if (statusDot) statusDot.className = "w-2 h-2 rounded-full bg-red-500";
-  console.error("Error al sincronizar con Firestore:", error);
-});
+  docRef.onSnapshot((doc) => {
+    if (doc.exists) {
+      const data = doc.data();
+      tournamentData = data.tournamentData || {};
+      if (data.accounts) accounts = { ...accounts, ...data.accounts };
+      
+      document.getElementById('sync-status-text').textContent = "Sincronizado";
+      document.getElementById('sync-status-dot').className = "w-2 h-2 rounded-full bg-emerald-500";
+    } else {
+      // Si no existe el documento, lo creamos por primera vez
+      docRef.set({ tournamentData, accounts });
+    }
+    renderHomeRanking();
+    renderParticipantsGrid();
+    updateGlobalStats();
+    if (!viewingTrainer && officialTrainers.length > 0) viewingTrainer = officialTrainers[0];
+    if (document.getElementById('view-profile') && !document.getElementById('view-profile').classList.contains('hidden')) {
+      renderProfileView();
+    }
+  }, (error) => {
+    console.error("Error al sincronizar con Firebase:", error);
+    document.getElementById('sync-status-text').textContent = "Error de sync";
+    document.getElementById('sync-status-dot').className = "w-2 h-2 rounded-full bg-red-500";
+  });
+}
 
-async function saveDataToStorage() {
-  try {
-    await setDoc(docRef, {
-      tournamentData: tournamentData,
-      accounts: accounts,
-      lastUpdated: new Date().toISOString()
-    });
-    localStorage.setItem('nuzlocke_data_v11', JSON.stringify(tournamentData));
-    localStorage.setItem('nuzlocke_accounts_v11', JSON.stringify(accounts));
-  } catch (e) {
-    console.error("Error guardando datos:", e);
-    localStorage.setItem('nuzlocke_data_v11', JSON.stringify(tournamentData));
-  }
+function saveDataToFirebase() {
+  db.collection("nuzlocke_hub").document("main_data").set({
+    tournamentData,
+    accounts
+  }).catch((error) => {
+    console.error("Error al guardar en Firestore: ", error);
+    alert("Hubo un error al guardar los cambios en la nube.");
+  });
 }
 
 window.exportData = function() {
@@ -565,12 +558,12 @@ function getPokemonSpriteUrl(speciesName) {
 
 window.addEventListener('DOMContentLoaded', () => {
   updateAuthHeader();
-  renderHomeRanking();
-  renderParticipantsGrid();
-  updateGlobalStats();
   const statPart = document.getElementById('stat-total-participants');
   if (statPart) statPart.textContent = officialTrainers.length;
-});window.switchView = function(viewName) {
+  initFirebaseSync();
+});
+
+window.switchView = function(viewName) {
   ['home', 'participants', 'bracket', 'playoffs', 'rules', 'stats', 'profile'].forEach(v => {
     const el = document.getElementById(`view-${v}`);
     if (el) el.classList.add('hidden');
@@ -585,6 +578,7 @@ window.addEventListener('DOMContentLoaded', () => {
   if (viewName === 'home') renderHomeRanking();
   if (viewName === 'participants') renderParticipantsGrid();
   if (viewName === 'stats') updateGlobalStats();
+  if (viewName === 'profile') renderProfileView();
 }
 
 function updateAuthHeader() {
@@ -624,7 +618,7 @@ window.handleLoginSubmit = function(e) {
   const pass = document.getElementById('auth-input-pass').value;
   if (accounts[selectedLoginTrainer] === pass) {
     currentUser = selectedLoginTrainer;
-    localStorage.setItem('nuzlocke_current_user_v11', currentUser);
+    localStorage.setItem('nuzlocke_current_user_tracker', currentUser);
     closeAuthModal(); 
     updateAuthHeader();
     viewingTrainer = currentUser; 
@@ -637,14 +631,14 @@ window.changePassword = function(e) {
   const newPass = document.getElementById('new-pass-input').value;
   if (newPass.trim().length > 0 && currentUser) {
     accounts[currentUser] = newPass;
-    saveDataToStorage(); 
+    saveDataToFirebase(); 
     alert('¡Contraseña actualizada!');
     document.getElementById('new-pass-input').value = '';
   }
 }
 
 window.logout = function() {
-  localStorage.removeItem('nuzlocke_current_user_v11');
+  localStorage.removeItem('nuzlocke_current_user_tracker');
   currentUser = null;
   updateAuthHeader(); 
   switchView('participants');
@@ -794,12 +788,6 @@ window.switchProfileTab = function(tab) {
   if (targetContent) targetContent.classList.remove('hidden');
   const targetBtn = document.getElementById(`btn-tab-${tab}`);
   if (targetBtn) targetBtn.className = "px-4 py-2 rounded-xl font-bold text-sm transition bg-red-600 text-white shadow";
-}
-
-const originalSwitchView = window.switchView;
-window.switchView = function(viewName) {
-  originalSwitchView(viewName);
-  if (viewName === 'profile') renderProfileView();
 }
 
 function renderProfileView() {
@@ -953,7 +941,8 @@ async function renderStatsAndTypes(statsObj, queryName, speciesName, preloadedTy
   const typeColors = {
     normal: 'bg-zinc-500 text-white', fire: 'bg-orange-600 text-white', water: 'bg-blue-600 text-white',
     electric: 'bg-amber-500 text-black font-bold', grass: 'bg-emerald-600 text-white', ice: 'bg-cyan-400 text-black font-bold',
-    fighting: 'bg-red-700 text-white', poison: 'bg-purple-600 text-white', ground: 'bg-amber-700 text-whitflying: 'bg-indigo-400 text-white', psychic: 'bg-pink-600 text-white', bug: 'bg-lime-600 text-white',
+    fighting: 'bg-red-700 text-white', poison: 'bg-purple-600 text-white', ground: 'bg-amber-700 text-white',
+    flying: 'bg-indigo-400 text-white', psychic: 'bg-pink-600 text-white', bug: 'bg-lime-600 text-white',
     rock: 'bg-stone-600 text-white', ghost: 'bg-purple-900 text-white', dragon: 'bg-violet-700 text-white',
     dark: 'bg-neutral-800 text-white', steel: 'bg-slate-500 text-white', fairy: 'bg-rose-400 text-black font-bold'
   };
@@ -988,15 +977,7 @@ async function renderStatsAndTypes(statsObj, queryName, speciesName, preloadedTy
       document.getElementById('detail-modal-types').innerHTML = '<span class="text-xs text-slate-500">Tipos estándar</span>';
     }
   }
-  
-  if (typeUrls && typeUrls.length > 0) {
-    calculateWeaknessesAndResistances(typeUrls);
-  } else {
-    document.getElementById('detail-modal-weaknesses').innerHTML = '<span class="text-xs text-slate-500">No disponibles.</span>';
-  }
-}
-
-async function calculateWeaknessesAndResistances(typeUrls) {
+  async function calculateWeaknessesAndResistances(typeUrls) {
   try {
     const typeDataPromises = typeUrls.map(u => fetch(u).then(r => r.json()));
     const results = await Promise.all(typeDataPromises);
@@ -1053,7 +1034,7 @@ window.adminResetTramoDeaths = function(trainerName) {
       tournamentData[trainerName] = tournamentData[trainerName].map(p => {
         return p.status === 'dead' ? {...p, status: 'dead_history', deathsInTramo: 0} : {...p, deathsInTramo: 0};
       });
-      saveDataToStorage();
+      saveDataToFirebase();
       renderProfileView();
       renderHomeRanking();
       renderParticipantsGrid();
@@ -1122,7 +1103,7 @@ window.savePokemon = function(e) {
     });
   }
   
-  saveDataToStorage();
+  saveDataToFirebase();
   closePokemonModal();
   renderProfileView();
   renderHomeRanking();
@@ -1135,7 +1116,7 @@ window.deletePokemon = function(id) {
   if (currentUser !== viewingTrainer && currentUser !== "Rexitoo") return;
   if (confirm('¿Eliminar este registro permanentemente?')) {
     tournamentData[viewingTrainer] = tournamentData[viewingTrainer].filter(p => p.id !== id);
-    saveDataToStorage();
+    saveDataToFirebase();
     renderProfileView();
     renderHomeRanking();
     renderParticipantsGrid();
@@ -1145,3 +1126,10 @@ window.deletePokemon = function(id) {
 </script>
 </body>
 </html>
+  
+  if (typeUrls && typeUrls.length > 0) {
+    calculateWeaknessesAndResistances(typeUrls);
+  } else {
+    document.getElementById('detail-modal-weaknesses').innerHTML = '<span class="text-xs text-slate-500">No disponibles.</span>';
+  }
+  }
