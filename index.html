@@ -316,36 +316,25 @@ body { background-color: #0b0f17; color: #f8fafc; font-family: system-ui, -apple
 </div>
 </div>
 
-<!-- Script Principal con Firebase (Módulo) -->
+<!-- Script Principal con Firebase Corregido -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
 import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// Importa las funciones necesarias de los SDKs
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// ¡Importante! Añadimos Firestore aquí
-import { getFirestore } from "firebase/firestore";
-
-// Tu configuración de Firebase (la que ya tenías)
 const firebaseConfig = {
   apiKey: "AIzaSyBQWQbrDaRnUGP66AHqxnOwkeYbEvi9slo",
   authDomain: "tracker-randomlocke.firebaseapp.com",
   projectId: "tracker-randomlocke",
   storageBucket: "tracker-randomlocke.firebasestorage.app",
   messagingSenderId: "41525514343",
-  appId: "1:41525514343:web:5ef471d077b98ee66b44c2",
-  measurementId: "G-T0HNLXW8SS"
+  appId: "1:41525514343:web:dd596afb815bc8c86b44c2",
+  measurementId: "G-W2VX2XGLJ7"
 };
 
-// Inicializar Firebase
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
-
-// ¡Muy importante! Inicializar y exportar Firestore para usarlo en el resto de tu código
-export const db = getFirestore(app);
-  
+const db = getFirestore(app);
 
 // Base de datos de estadísticas modificadas (Desafío Lunar)
 const customLunarStats = {
@@ -355,7 +344,7 @@ const customLunarStats = {
   "raticate": { hp: 55, atk: 101, def: 70, spa: 50, spd: 75, spe: 97 },
   "arbok": { hp: 80, atk: 105, def: 70, spa: 65, spd: 80, spe: 80 },
   "raichu": { hp: 60, atk: 90, def: 55, spa: 110, spd: 80, spe: 110 },
-  "ninetales": {hp: 75, atk: 55, def: 75, spa: 100, spd: 100, spe: 100 },
+  "ninetales": { hp: 75, atk: 55, def: 75, spa: 100, spd: 100, spe: 100 },
   "wigglytuff": { hp: 140, atk: 70, def: 45, spa: 95, spd: 65, spe: 45 },
   "parasect": { hp: 100, atk: 95, def: 80, spa: 60, spd: 80, spe: 50 },
   "dugtrio": { hp: 55, atk: 120, def: 50, spa: 50, spd: 70, spe: 120 },
@@ -484,7 +473,6 @@ const customLunarStats = {
   "drampa": { hp: 100, atk: 60, def: 85, spa: 135, spd: 85, spe: 35 }
 };
 
-// Tipos modificados (Desafío Lunar)
 const customLunarTypes = {
   "corsola": ["water"],
   "delibird": ["ice"],
@@ -511,7 +499,6 @@ let viewingTrainer = null;
 let selectedLoginTrainer = null;
 let currentProfileTab = 'active';
 
-// Sincronización con Firestore en tiempo real
 const docRef = doc(db, "randomlocke", "torneo_principal");
 
 onSnapshot(docRef, (docSnap) => {
@@ -521,27 +508,19 @@ onSnapshot(docRef, (docSnap) => {
   if (docSnap.exists()) {
     const data = docSnap.data();
     tournamentData = data.tournamentData || {};
-    if (data.accounts) {
-      accounts = data.accounts;
-    }
+    if (data.accounts) accounts = data.accounts;
     if (statusText) statusText.textContent = "Sincronizado en vivo";
-    if (statusDot) {
-      statusDot.className = "w-2 h-2 rounded-full bg-emerald-500";
-    }
+    if (statusDot) statusDot.className = "w-2 h-2 rounded-full bg-emerald-500";
   } else {
-    // Si no existe aún en Firestore, inicializamos con los datos locales
     tournamentData = JSON.parse(localStorage.getItem('nuzlocke_data_v11')) || {};
     saveDataToStorage();
     if (statusText) statusText.textContent = "Creado en Firestore";
   }
   
-  // Renderizar vistas con los nuevos datos
   renderHomeRanking();
   renderParticipantsGrid();
   updateGlobalStats();
-  if (viewingTrainer) {
-    renderProfileView();
-  }
+  if (viewingTrainer) renderProfileView();
 }, (error) => {
   const statusText = document.getElementById('sync-status-text');
   const statusDot = document.getElementById('sync-status-dot');
@@ -553,14 +532,14 @@ onSnapshot(docRef, (docSnap) => {
 async function saveDataToStorage() {
   try {
     await setDoc(docRef, {
-      tournamentData: tournamentData,accounts: accounts,
+      tournamentData: tournamentData,
+      accounts: accounts,
       lastUpdated: new Date().toISOString()
     });
     localStorage.setItem('nuzlocke_data_v11', JSON.stringify(tournamentData));
     localStorage.setItem('nuzlocke_accounts_v11', JSON.stringify(accounts));
   } catch (e) {
     console.error("Error guardando datos:", e);
-    // Fallback local en caso de fallo de red momentáneo
     localStorage.setItem('nuzlocke_data_v11', JSON.stringify(tournamentData));
   }
 }
@@ -615,8 +594,7 @@ function updateAuthHeader() {
   if (!container) return;
   if (currentUser) {
     const isAdmin = currentUser === "Rexitoo";
-    container.innerHTML = `
-      <div class="flex items-center gap-3">
+    container.innerHTML = `<div class="flex items-center gap-3">
         <button onclick="viewingTrainer = '${currentUser}'; switchView('profile');" class="bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl text-xs font-bold text-emerald-400 flex items-center gap-2">
           <span class="w-2 h-2 rounded-full bg-emerald-500"></span> ${isAdmin ? '[Admin] ' : ''}${currentUser}
         </button>
@@ -812,8 +790,7 @@ window.switchProfileTab = function(tab) {
     if (content) content.classList.add('hidden');
     const btn = document.getElementById(`btn-tab-${t}`);
     if (btn) btn.className = "px-4 py-2 rounded-xl font-bold text-sm transition text-slate-400 hover:bg-[#121824]";
-  });
-  const targetContent = document.getElementById(`profile-content-${tab}`);
+  });const targetContent = document.getElementById(`profile-content-${tab}`);
   if (targetContent) targetContent.classList.remove('hidden');
   const targetBtn = document.getElementById(`btn-tab-${tab}`);
   if (targetBtn) targetBtn.className = "px-4 py-2 rounded-xl font-bold text-sm transition bg-red-600 text-white shadow";
@@ -857,7 +834,9 @@ function renderProfileView() {
   ['active', 'pc', 'dead', 'stolen', 'banned'].forEach(t => {
     const c = document.getElementById(`profile-content-${t}`);
     if (c) c.innerHTML = '';
-  });const pkmns = tournamentData[viewingTrainer] || [];
+  });
+  
+  const pkmns = tournamentData[viewingTrainer] || [];
   pkmns.forEach(p => {
     const spriteUrl = getPokemonSpriteUrl(p.species);
     const isHistoricalDead = (p.status === 'dead_history');
@@ -945,8 +924,7 @@ window.openPokemonDetailsModal = async function(p) {
     }
   }
 }
-
-async function renderStatsAndTypes(statsObj, queryName, speciesName, preloadedTypeUrls = null) {
+  async function renderStatsAndTypes(statsObj, queryName, speciesName, preloadedTypeUrls = null) {
   const statMapping = [
     {key: 'hp', name: 'PS'},
     {key: 'atk', name: 'Ataque'},
