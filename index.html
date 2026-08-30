@@ -316,20 +316,20 @@ body { background-color: #0b0f17; color: #f8fafc; font-family: system-ui, -apple
 </div>
 </div>
 
-<!-- Script Principal con Firebase Corregido -->
+<!-- Script Principal con la Nueva Base de Datos Firestore -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
 import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBQWQbrDaRnUGP66AHqxnOwkeYbEvi9slo",
-  authDomain: "tracker-randomlocke.firebaseapp.com",
-  projectId: "tracker-randomlocke",
-  storageBucket: "tracker-randomlocke.firebasestorage.app",
-  messagingSenderId: "41525514343",
-  appId: "1:41525514343:web:dd596afb815bc8c86b44c2",
-  measurementId: "G-W2VX2XGLJ7"
+  apiKey: "AIzaSyAg3YFvP_ZjbMPWMx8b0b3jWwOuBBBfAdQ",
+  authDomain: "tracker-1043b.firebaseapp.com",
+  projectId: "tracker-1043b",
+  storageBucket: "tracker-1043b.firebasestorage.app",
+  messagingSenderId: "287424041797",
+  appId: "1:287424041797:web:fd047e6eb4272f8c91a42c",
+  measurementId: "G-6QHST1SV2H"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -570,9 +570,7 @@ window.addEventListener('DOMContentLoaded', () => {
   updateGlobalStats();
   const statPart = document.getElementById('stat-total-participants');
   if (statPart) statPart.textContent = officialTrainers.length;
-});
-
-window.switchView = function(viewName) {
+});window.switchView = function(viewName) {
   ['home', 'participants', 'bracket', 'playoffs', 'rules', 'stats', 'profile'].forEach(v => {
     const el = document.getElementById(`view-${v}`);
     if (el) el.classList.add('hidden');
@@ -594,7 +592,8 @@ function updateAuthHeader() {
   if (!container) return;
   if (currentUser) {
     const isAdmin = currentUser === "Rexitoo";
-    container.innerHTML = `<div class="flex items-center gap-3">
+    container.innerHTML = `
+      <div class="flex items-center gap-3">
         <button onclick="viewingTrainer = '${currentUser}'; switchView('profile');" class="bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl text-xs font-bold text-emerald-400 flex items-center gap-2">
           <span class="w-2 h-2 rounded-full bg-emerald-500"></span> ${isAdmin ? '[Admin] ' : ''}${currentUser}
         </button>
@@ -790,7 +789,8 @@ window.switchProfileTab = function(tab) {
     if (content) content.classList.add('hidden');
     const btn = document.getElementById(`btn-tab-${t}`);
     if (btn) btn.className = "px-4 py-2 rounded-xl font-bold text-sm transition text-slate-400 hover:bg-[#121824]";
-  });const targetContent = document.getElementById(`profile-content-${tab}`);
+  });
+  const targetContent = document.getElementById(`profile-content-${tab}`);
   if (targetContent) targetContent.classList.remove('hidden');
   const targetBtn = document.getElementById(`btn-tab-${tab}`);
   if (targetBtn) targetBtn.className = "px-4 py-2 rounded-xl font-bold text-sm transition bg-red-600 text-white shadow";
@@ -924,7 +924,8 @@ window.openPokemonDetailsModal = async function(p) {
     }
   }
 }
-  async function renderStatsAndTypes(statsObj, queryName, speciesName, preloadedTypeUrls = null) {
+
+async function renderStatsAndTypes(statsObj, queryName, speciesName, preloadedTypeUrls = null) {
   const statMapping = [
     {key: 'hp', name: 'PS'},
     {key: 'atk', name: 'Ataque'},
@@ -952,8 +953,7 @@ window.openPokemonDetailsModal = async function(p) {
   const typeColors = {
     normal: 'bg-zinc-500 text-white', fire: 'bg-orange-600 text-white', water: 'bg-blue-600 text-white',
     electric: 'bg-amber-500 text-black font-bold', grass: 'bg-emerald-600 text-white', ice: 'bg-cyan-400 text-black font-bold',
-    fighting: 'bg-red-700 text-white', poison: 'bg-purple-600 text-white', ground: 'bg-amber-700 text-white',
-    flying: 'bg-indigo-400 text-white', psychic: 'bg-pink-600 text-white', bug: 'bg-lime-600 text-white',
+    fighting: 'bg-red-700 text-white', poison: 'bg-purple-600 text-white', ground: 'bg-amber-700 text-whitflying: 'bg-indigo-400 text-white', psychic: 'bg-pink-600 text-white', bug: 'bg-lime-600 text-white',
     rock: 'bg-stone-600 text-white', ghost: 'bg-purple-900 text-white', dragon: 'bg-violet-700 text-white',
     dark: 'bg-neutral-800 text-white', steel: 'bg-slate-500 text-white', fairy: 'bg-rose-400 text-black font-bold'
   };
