@@ -489,14 +489,13 @@ const officialTrainers = [
 ];
 
 let accounts = {};
-officialTrainers.forEach(t => { accounts[t] = "1234"; });
+
 
 let tournamentData = {};
 let currentUser = localStorage.getItem('nuzlocke_current_user_tracker') || null;
 let viewingTrainer = null;
 let selectedLoginTrainer = null;
 let currentProfileTab = 'active';
-
 // Sincronización en tiempo real con Firestore
 function initFirebaseSync() {
   const docRef = db.collection("nuzlocke_hub").doc("main_data");
@@ -525,7 +524,8 @@ function initFirebaseSync() {
     document.getElementById('sync-status-text').textContent = "Error de sync";
     document.getElementById('sync-status-dot').className = "w-2 h-2 rounded-full bg-red-500";
   });
-}
+        }
+  
 
 function saveDataToFirebase() {
   db.collection("nuzlocke_hub").doc("main_data").set({
