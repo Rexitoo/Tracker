@@ -496,25 +496,40 @@ let currentUser = localStorage.getItem('nuzlocke_current_user_tracker') || null;
 let viewingTrainer = null;
 let selectedLoginTrainer = null;
 let currentProfileTab = 'active';
-// Sincronización en tiempo real con Firestore
+// Sincronización en tiempo real con Firestore (Versión móvil blindada)
 function initFirebaseSync() {
   const docRef = db.collection("nuzlocke_hub").doc("main_data");
   
   docRef.onSnapshot((doc) => {
     if (doc.exists) {
       const data = doc.data();
+      
+      // Forzamos a que si tournamentData está vacío, coja un objeto vacío en vez de fallar
       tournamentData = data.tournamentData || {};
-      if (data.accounts) accounts = { ...accounts, ...data.accounts };
+      
+      // Si existen cuentas en Firestore, las usamos. Si no, ponemos las por defecto.
+      if (data.accounts && Object.keys(data.accounts).length > 0) {
+        accounts = data.accounts;
+      } else {
+        accounts = {};
+        officialTrainers.forEach(t => { accounts[t] = "1234"; });
+      }
       
       document.getElementById('sync-status-text').textContent = "Sincronizado";
       document.getElementById('sync-status-dot').className = "w-2 h-2 rounded-full bg-emerald-500";
     } else {
-      // Si no existe el documento, lo creamos por primera vez
+      // Si el documento no existe, lo creamos
+      accounts = {};
+      officialTrainers.forEach(t => { accounts[t] = "1234"; });
+      tournamentData = {};
       docRef.set({ tournamentData, accounts });
     }
-    renderHomeRanking();
-    renderParticipantsGrid();
-    updateGlobalStats();
+    
+    // Forzamos la actualización visual de la web
+    if (typeof renderHomeRanking === 'function') renderHomeRanking();
+    if (typeof renderParticipantsGrid === 'function') renderParticipantsGrid();
+    if (typeof updateGlobalStats === 'function') updateGlobalStats();
+    
     if (!viewingTrainer && officialTrainers.length > 0) viewingTrainer = officialTrainers[0];
     if (document.getElementById('view-profile') && !document.getElementById('view-profile').classList.contains('hidden')) {
       renderProfileView();
@@ -524,7 +539,8 @@ function initFirebaseSync() {
     document.getElementById('sync-status-text').textContent = "Error de sync";
     document.getElementById('sync-status-dot').className = "w-2 h-2 rounded-full bg-red-500";
   });
-        }
+}
+  
   
 
 function saveDataToFirebase() {
