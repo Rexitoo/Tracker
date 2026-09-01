@@ -496,7 +496,6 @@ let currentUser = localStorage.getItem('nuzlocke_current_user_tracker') || null;
 let viewingTrainer = null;
 let selectedLoginTrainer = null;
 let currentProfileTab = 'active';
-// Sincronización en tiempo real con Firestore (Versión móvil blindada)
 function initFirebaseSync() {
   const docRef = db.collection("nuzlocke_hub").doc("main_data");
   
@@ -504,11 +503,11 @@ function initFirebaseSync() {
     if (doc.exists) {
       const data = doc.data();
       
-      // Forzamos a que si tournamentData está vacío, coja un objeto vacío en vez de fallar
+      // 1. Cargamos el tournamentData de Firebase
       tournamentData = data.tournamentData || {};
       
-      // Si existen cuentas en Firestore, las usamos. Si no, ponemos las por defecto.
-      if (data.accounts && Object.keys(data.accounts).length > 0) {
+      // 2. Cargamos las cuentas desde el mapa "accounts" que tienes en Firebase
+      if (data.accounts && typeof data.accounts === 'object') {
         accounts = data.accounts;
       } else {
         accounts = {};
@@ -518,14 +517,14 @@ function initFirebaseSync() {
       document.getElementById('sync-status-text').textContent = "Sincronizado";
       document.getElementById('sync-status-dot').className = "w-2 h-2 rounded-full bg-emerald-500";
     } else {
-      // Si el documento no existe, lo creamos
+      // Si el documento no existiera por lo que sea, inicializamos valores vacíos
       accounts = {};
       officialTrainers.forEach(t => { accounts[t] = "1234"; });
       tournamentData = {};
       docRef.set({ tournamentData, accounts });
     }
     
-    // Forzamos la actualización visual de la web
+    // 3. Forzamos la actualización visual de la web para que aparezca todo al instante
     if (typeof renderHomeRanking === 'function') renderHomeRanking();
     if (typeof renderParticipantsGrid === 'function') renderParticipantsGrid();
     if (typeof updateGlobalStats === 'function') updateGlobalStats();
@@ -540,6 +539,7 @@ function initFirebaseSync() {
     document.getElementById('sync-status-dot').className = "w-2 h-2 rounded-full bg-red-500";
   });
 }
+  
   
   
 
